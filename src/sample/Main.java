@@ -303,8 +303,8 @@ public class Main extends Application {
     void pauseMenu(){
         System.out.println("paused");
     }
-    void leaderBoard(){
-        System.out.println("leaderboard");
+    void check(){
+
     }
 
 
