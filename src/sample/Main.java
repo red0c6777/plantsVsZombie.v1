@@ -21,6 +21,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -223,10 +224,32 @@ public class Main extends Application {
     void startLevel(Stage primaryStage,int level)throws Exception{
         System.out.println("Starting the level!");
 
+        //Creating glow effect for button glowing when cursor is hovered on them
+        DropShadow borderGlow = new DropShadow();
+        borderGlow.setOffsetY(0f);
+        borderGlow.setOffsetX(0f);
+        borderGlow.setColor(Color.RED);
+        borderGlow.setWidth(70);
+        borderGlow.setHeight(70);
+
         int sunCount = 0;
 
         Text sunCountL = new Text();
         sunCountL.setText(Integer.toString(sunCount));
+
+        Image pauseButtonImage = new Image(new FileInputStream("res\\images\\button\\pauseButton.png"));
+        ImageView pauseButtonImageView = new ImageView(pauseButtonImage);
+        pauseButtonImageView.setPreserveRatio(true);
+        pauseButtonImageView.setFitWidth(100);
+
+        Image resumeButtonImage = new Image(new FileInputStream("res\\images\\button\\resumeButton.png"));
+        ImageView resumeButtonImageView = new ImageView(resumeButtonImage);
+        Image exitButtonImage = new Image(new FileInputStream("res\\images\\button\\exitButtonPauseMenu.png"));
+        ImageView exitButtonImageView = new ImageView(exitButtonImage);
+        resumeButtonImageView.setPreserveRatio((true));
+        resumeButtonImageView.setFitWidth(150);
+        exitButtonImageView.setPreserveRatio(true);
+        exitButtonImageView.setFitWidth(150);
 
         Image lawnImage = new Image(new FileInputStream("res\\images\\lawn\\lawnHD_crop.jpg"),1280,720,false,false);
         Image zombieFlyingimage = new Image(new FileInputStream("res\\images\\zombie\\zombieFlying.gif"),114,144,false,false);
@@ -238,11 +261,84 @@ public class Main extends Application {
         Image peashooterCard = new Image(new FileInputStream("res\\images\\plant\\peashooterCard.png"));
         Image sunflowerCard = new Image(new FileInputStream("res\\images\\plant\\sunflowerCard.png"));
         Image wallnutCard = new Image(new FileInputStream("res\\images\\plant\\wallnutCard.png"));
+        Image pauseMenuImage = new Image(new FileInputStream("res\\images\\button\\pauseMenuPicture.png"));
 
 
         ImageView peashooterCardImageView = new ImageView(peashooterCard);
         ImageView sunflowerCardImageView = new ImageView(sunflowerCard);
         ImageView wallnutCardImageView = new ImageView(wallnutCard);
+        ImageView pauseMenuImageView = new ImageView(pauseMenuImage);
+        pauseMenuImageView.setPreserveRatio(true);
+        pauseMenuImageView.setFitWidth(360);
+
+        Button pauseButton = new Button();
+        pauseButton.setGraphic(pauseButtonImageView);
+        pauseButton.setLayoutX(1100);
+        pauseButton.setLayoutY(10);
+        pauseButton.setPadding(new Insets(-5,-5,-5,-5));
+
+        //------Resume Button----------
+        Button resumeButton = new Button();
+        resumeButton.setGraphic(resumeButtonImageView);
+        resumeButton.setPadding(new Insets(-3,-3,-3,-3));
+
+
+
+        Button exitButton = new Button();
+        exitButton.setGraphic(exitButtonImageView);
+        exitButton.setPadding(new Insets(-3,-3,-3,-3));
+
+
+
+        VBox pauseMenuBox = new VBox();
+        pauseMenuBox.getChildren().addAll(resumeButton,exitButton);
+        pauseMenuBox.setSpacing(10f);
+
+        pauseMenuBox.setLayoutX(105);
+        pauseMenuBox.setLayoutY(250);
+
+        Popup menuPopUp = new Popup();
+        menuPopUp.getContent().addAll(pauseMenuImageView,pauseMenuBox);
+
+
+        menuPopUp.setAutoHide(true);
+
+
+        pauseButton.addEventHandler(MouseEvent.MOUSE_ENTERED,(event) -> pauseButton.setEffect(borderGlow));
+        pauseButton.addEventHandler(MouseEvent.MOUSE_EXITED,(event) -> pauseButton.setEffect(null));
+        pauseButton.setOnAction(actionEvent -> {
+            try {
+                if(!menuPopUp.isShowing())
+                    menuPopUp.show(primaryStage);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Could not popup pause window");
+            }
+        });
+
+        resumeButton.addEventHandler(MouseEvent.MOUSE_ENTERED,(event) -> resumeButton.setEffect(borderGlow));
+        resumeButton.addEventHandler(MouseEvent.MOUSE_EXITED,(event) -> resumeButton.setEffect(null));
+        resumeButton.setOnAction(actionEvent -> {
+            try {
+                menuPopUp.hide();
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Could not resume");
+            }
+        });
+
+        exitButton.addEventHandler(MouseEvent.MOUSE_ENTERED,(event) -> exitButton.setEffect(borderGlow));
+        exitButton.addEventHandler(MouseEvent.MOUSE_EXITED,(event) -> exitButton.setEffect(null));
+        exitButton.setOnAction(actionEvent -> {
+            try {
+                menuPopUp.hide();
+                start(primaryStage);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Could not exit");
+            }
+        });
+
 
         peashooterCardImageView.setPreserveRatio(true);
         wallnutCardImageView.setPreserveRatio(true);
@@ -289,7 +385,7 @@ public class Main extends Application {
         sunCountL.setX(100);
         sunCountL.setFont(Font.font(40));
 
-        quickPlayPane.getChildren().addAll(lawnImageView,barImageView,zombieFlyingImageView,plantSlots,sunCountL);
+        quickPlayPane.getChildren().addAll(lawnImageView,barImageView,zombieFlyingImageView,plantSlots,sunCountL,pauseButton);
 
 
         peashooterCardImageView.setOnMouseDragged(mouseEvent -> {
@@ -300,16 +396,6 @@ public class Main extends Application {
         primaryStage.setScene(quickPlayScene);
         primaryStage.show();
     }
-    void pauseMenu(){
-        System.out.println("paused");
-    }
-    void check3(){
-
-    }
-    void leaderpeader(){
-
-    }
-
 
     public static void main(String[] args) {
         launch(args);
