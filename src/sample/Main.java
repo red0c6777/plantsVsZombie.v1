@@ -300,6 +300,9 @@ public class Main extends Application {
         primaryStage.setScene(quickPlayScene);
         primaryStage.show();
     }
+    void pauseMenu(){
+        System.out.println("paused");
+    }
 
 
     public static void main(String[] args) {
