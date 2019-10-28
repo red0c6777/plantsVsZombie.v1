@@ -306,6 +306,9 @@ public class Main extends Application {
     void check2(){
 
     }
+    void leaderpeader(){
+
+    }
 
 
     public static void main(String[] args) {
