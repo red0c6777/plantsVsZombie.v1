@@ -303,7 +303,7 @@ public class Main extends Application {
     void pauseMenu(){
         System.out.println("paused");
     }
-    void check2(){
+    void check3(){
 
     }
     void leaderpeader(){
