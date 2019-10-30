@@ -2,16 +2,9 @@ package sample;
 
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Group;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
@@ -26,7 +19,46 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.io.FileInputStream;
-import java.util.Stack;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.concurrent.atomic.AtomicReference;
+
+class Plant{
+    int health;
+    int attack;
+    int type;
+}
+
+class PeaShooter extends Plant {
+
+    Image peaShooterImage;
+    ImageView peaShooterImageView;
+
+    PeaShooter() throws FileNotFoundException {
+        peaShooterImage = new Image(new FileInputStream("res\\images\\plant\\peashooter.png"));
+        peaShooterImageView = new ImageView(peaShooterImage);
+    }
+
+
+    void attack(){
+
+    }
+
+}
+
+class SunFlower extends Plant{
+
+    Image sunFlowerImage;
+    ImageView sunFlowerImageView;
+
+    SunFlower() throws FileNotFoundException{
+        sunFlowerImage = new Image(new FileInputStream("res\\images\\plant\\sunflower.png"));
+        sunFlowerImageView = new ImageView(sunFlowerImage);
+    }
+    void giveSun(){
+
+    }
+}
 
 public class Main extends Application {
 
@@ -80,6 +112,8 @@ public class Main extends Application {
         newGameButton.setOnAction(actionEvent -> {
             try {
                 newGame(primaryStage);
+                gameLevel gamelevel = new gameLevel();
+                gamelevel.start(primaryStage);
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("Could not start new game!");
@@ -105,7 +139,10 @@ public class Main extends Application {
         quickPlayButton.addEventHandler(MouseEvent.MOUSE_EXITED,(event) -> quickPlayButton.setEffect(null));
         quickPlayButton.setOnAction(actionEvent -> {
             try {
-                quickPlay(primaryStage);
+                //quickPlay(primaryStage);
+                gameLevel gamelevel = new gameLevel();
+                gamelevel.setLevel(3);
+                gamelevel.start(primaryStage);
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("Could not start quick play!");
@@ -232,16 +269,25 @@ public class Main extends Application {
         borderGlow.setWidth(70);
         borderGlow.setHeight(70);
 
-        int sunCount = 0;
+        DropShadow plantGlow = new DropShadow();
+        plantGlow.setOffsetY(0f);
+        plantGlow.setOffsetX(0f);
+        plantGlow.setColor(Color.RED);
+        plantGlow.setWidth(150);
+        plantGlow.setHeight(150);
 
+        //Sun counter
+
+        int sunCount = 0;
         Text sunCountL = new Text();
         sunCountL.setText(Integer.toString(sunCount));
+
+        //Button images and image Views
 
         Image pauseButtonImage = new Image(new FileInputStream("res\\images\\button\\pauseButton.png"));
         ImageView pauseButtonImageView = new ImageView(pauseButtonImage);
         pauseButtonImageView.setPreserveRatio(true);
         pauseButtonImageView.setFitWidth(100);
-
         Image resumeButtonImage = new Image(new FileInputStream("res\\images\\button\\resumeButton.png"));
         ImageView resumeButtonImageView = new ImageView(resumeButtonImage);
         Image exitButtonImage = new Image(new FileInputStream("res\\images\\button\\exitButtonPauseMenu.png"));
@@ -254,7 +300,7 @@ public class Main extends Application {
         Image lawnImage = new Image(new FileInputStream("res\\images\\lawn\\lawnHD_crop.jpg"),1280,720,false,false);
         Image zombieFlyingimage = new Image(new FileInputStream("res\\images\\zombie\\zombieFlying.gif"),114,144,false,false);
 
-        //Images of plants
+        //Images and image views of plants
         Image sunflowerImage = new Image(new FileInputStream("res\\images\\plant\\sunflower.png"));
         Image peashooterImage = new Image(new FileInputStream("res\\images\\plant\\peashooter.png"));
         Image wallnutImage = new Image(new FileInputStream("res\\images\\plant\\wallnut.png"));
@@ -262,15 +308,16 @@ public class Main extends Application {
         Image sunflowerCard = new Image(new FileInputStream("res\\images\\plant\\sunflowerCard.png"));
         Image wallnutCard = new Image(new FileInputStream("res\\images\\plant\\wallnutCard.png"));
         Image pauseMenuImage = new Image(new FileInputStream("res\\images\\button\\pauseMenuPicture.png"));
-
-
         ImageView peashooterCardImageView = new ImageView(peashooterCard);
         ImageView sunflowerCardImageView = new ImageView(sunflowerCard);
         ImageView wallnutCardImageView = new ImageView(wallnutCard);
         ImageView pauseMenuImageView = new ImageView(pauseMenuImage);
+
+
         pauseMenuImageView.setPreserveRatio(true);
         pauseMenuImageView.setFitWidth(360);
 
+        //-----------pause Button-------------------------------
         Button pauseButton = new Button();
         pauseButton.setGraphic(pauseButtonImageView);
         pauseButton.setLayoutX(1100);
@@ -282,27 +329,26 @@ public class Main extends Application {
         resumeButton.setGraphic(resumeButtonImageView);
         resumeButton.setPadding(new Insets(-3,-3,-3,-3));
 
-
-
+        //-----------------Exit Button--------------------
         Button exitButton = new Button();
         exitButton.setGraphic(exitButtonImageView);
         exitButton.setPadding(new Insets(-3,-3,-3,-3));
 
 
+        //Pause Box for buttons:
 
         VBox pauseMenuBox = new VBox();
         pauseMenuBox.getChildren().addAll(resumeButton,exitButton);
         pauseMenuBox.setSpacing(10f);
-
         pauseMenuBox.setLayoutX(105);
         pauseMenuBox.setLayoutY(250);
 
+        //Pop up pause menu:
         Popup menuPopUp = new Popup();
         menuPopUp.getContent().addAll(pauseMenuImageView,pauseMenuBox);
-
-
         menuPopUp.setAutoHide(true);
 
+        //All the event handlers:
 
         pauseButton.addEventHandler(MouseEvent.MOUSE_ENTERED,(event) -> pauseButton.setEffect(borderGlow));
         pauseButton.addEventHandler(MouseEvent.MOUSE_EXITED,(event) -> pauseButton.setEffect(null));
@@ -367,6 +413,7 @@ public class Main extends Application {
         zombieFlyingImageView.setX(1300);
         zombieFlyingImageView.setY(40);
 
+        //Zombie walking/flying animation:
         TranslateTransition zombieMovingTransition = new TranslateTransition();
         zombieMovingTransition.setDuration(Duration.seconds(40));
         zombieMovingTransition.setNode(zombieFlyingImageView);
@@ -375,12 +422,23 @@ public class Main extends Application {
         zombieMovingTransition.setAutoReverse(false);
         zombieMovingTransition.play();
 
+        //Plant slots VBox:
         VBox plantSlots = new VBox();
         plantSlots.getChildren().addAll(sunflowerCardImageView,peashooterCardImageView, wallnutCardImageView);
-
         plantSlots.setLayoutX(20);
         plantSlots.setLayoutY(150);
         plantSlots.setSpacing(2f);
+
+        double startDragX =10 ;
+        double startDragY = 60 ;
+
+
+        peashooterCardImageView.setOnMousePressed(mouseEvent -> {
+
+            System.out.println("clicked plant");
+            peashooterCardImageView.setEffect(plantGlow);
+            peaShooterSelected(peashooterCardImageView.getX(),peashooterCardImageView.getY());
+        });
 
         sunCountL.setX(100);
         sunCountL.setFont(Font.font(40));
@@ -395,6 +453,10 @@ public class Main extends Application {
         Scene quickPlayScene = new Scene(quickPlayPane);
         primaryStage.setScene(quickPlayScene);
         primaryStage.show();
+    }
+
+    void peaShooterSelected(double startPosX,double startPosY){
+
     }
 
     public static void main(String[] args) {
