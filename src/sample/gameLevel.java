@@ -3,14 +3,18 @@ package sample;
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
+import javafx.scene.input.TransferMode;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -19,10 +23,16 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.Stack;
 
 public class gameLevel extends Application {
 
     int level;
+
+    public gameLevel(int l){
+        this.level = l;
+    }
 
     void setLevel(int l){
         level = l;
@@ -86,6 +96,13 @@ public class gameLevel extends Application {
         ImageView wallnutCardImageView = new ImageView(wallnutCard);
         ImageView pauseMenuImageView = new ImageView(pauseMenuImage);
 
+        Image lawnmowerImage = new Image(new FileInputStream("res\\images\\lawnmower.png"));
+        ImageView lawnmowerImageView = new ImageView((lawnmowerImage));
+
+        peashooterCardImageView.setId("peashooter");
+        sunflowerCardImageView.setId("sunflower");
+        wallnutCardImageView.setId("wallnut");
+
 
         pauseMenuImageView.setPreserveRatio(true);
         pauseMenuImageView.setFitWidth(360);
@@ -120,6 +137,24 @@ public class gameLevel extends Application {
         Popup menuPopUp = new Popup();
         menuPopUp.getContent().addAll(pauseMenuImageView, pauseMenuBox);
         menuPopUp.setAutoHide(true);
+
+        //Making planterZone gridBox
+
+        GridPane planterZone = new GridPane();
+
+        planterZone.setGridLinesVisible(true);
+
+        System.out.println(planterZone.getLayoutX());
+
+        for(int i=0;i<=8;i++){
+            for(int j=0;j<=4;j++){
+                planterZone.add(new ImageView(peashooterImage),i,j);
+            }
+        }
+
+        //planterZone.setAlignment(Pos.CENTER);
+
+        //planterZone.add(new ImageView(peashooterImage),0,0);
 
         //All the event handlers:
 
@@ -205,26 +240,145 @@ public class gameLevel extends Application {
         double startDragX = 10;
         double startDragY = 60;
 
-
-        peashooterCardImageView.setOnMousePressed(mouseEvent -> {
-
-            System.out.println("clicked plant");
-            peashooterCardImageView.setEffect(plantGlow);
-            //peaShooterSelected(peashooterCardImageView.getX(),peashooterCardImageView.getY());
+        peashooterCardImageView.setOnMouseClicked(mouseEvent -> {
+            System.out.println("peashooter  clicked");
+            peashooterCardImageView.setEffect(borderGlow);
         });
+
+
+        peashooterCardImageView.setOnDragDetected(new draggingPlantController(peashooterCardImageView,peashooterImage));
+        sunflowerCardImageView.setOnDragDetected(new draggingPlantController(sunflowerCardImageView,sunflowerImage));
+        wallnutCardImageView.setOnDragDetected(new draggingPlantController(wallnutCardImageView,wallnutImage));
+
+        quickPlayPane.setOnDragOver(dragEvent -> {
+            peashooterCardImageView.setEffect(null);
+            dragEvent.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+            dragEvent.consume();
+        });
+
+        quickPlayPane.setOnDragDropped(dragEvent -> {
+            double posX;
+            double posY;
+            int column;
+            int row;
+
+            String plantType = dragEvent.getDragboard().getString();
+            double dropX = dragEvent.getX();
+            double dropY = dragEvent.getY();
+
+            if((dropX>=300 && dropX <= 1219) && (dropY>=78 && dropY <=660)){
+                if(dropX <= 397) {
+                    posX = 300;
+                    column = 1;
+                }
+                else if(dropX <=496) {
+                    posX = 397;
+                    column = 2;
+                }
+                else if(dropX <= 609) {
+                    posX = 496;
+                    column = 3;
+                }
+                else if(dropX <= 707) {
+                    posX = 609;
+                    column = 4;
+                }
+                else if(dropX <= 815) {
+                    posX = 707;
+                    column = 5;
+                }
+                else if(dropX <= 917) {
+                    posX = 815;
+                    column = 6;
+                }
+                else if(dropX <= 1020) {
+                    posX = 917;
+                    column = 7;
+                }
+                else if(dropX <= 1124) {
+                    posX = 1020;
+                    column = 8;
+                }
+                else {
+                    posX = 1124;
+                    column = 9;
+                }
+                //checking row:
+
+                if(dropY <=199) {
+                    posY = 78;
+                    row = 1;
+                }
+                else if(dropY <= 319) {
+                    posY = 199;
+                    row = 2;
+                }
+                else if(dropY <= 440) {
+                    posY = 319;
+                    row = 3;
+                }
+                else if(dropY <= 562) {
+                    posY = 440;
+                    row = 4;
+                }
+                else {
+                    posY = 562;
+                    row = 5;
+                }
+
+                System.out.println("Planting coord: row: "+row+"  column: "+column);
+
+                try {
+                    plant newPlant = new plant(plantType,row,column,posX,posY);
+                    newPlant.addPlantToLawn(quickPlayPane);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                    System.out.println("Cannot create plant!");
+                }
+            }
+            else{
+                System.out.println("Out of bounds for planting");
+            }
+
+        });
+
+
+
 
         sunCountL.setX(100);
         sunCountL.setFont(Font.font(40));
 
+        planterZone.setLayoutX(300);
+        planterZone.setLayoutY(100);
+        planterZone.setVgap(40);
+        planterZone.setHgap(25);
+
+
         quickPlayPane.getChildren().addAll(lawnImageView, barImageView, zombieFlyingImageView, plantSlots, sunCountL, pauseButton);
 
+        //Placing the lawnmowers:
+        lawnmower lw1 = new lawnmower(1);
+        lw1.addLawnmower(quickPlayPane);
+        lawnmower lw2 = new lawnmower(2);
+        lw2.addLawnmower(quickPlayPane);
+        lawnmower lw3 = new lawnmower(3);
+        lw3.addLawnmower(quickPlayPane);
+        lawnmower lw4 = new lawnmower(4);
+        lw4.addLawnmower(quickPlayPane);
+        lawnmower lw5 = new lawnmower(5);
+        lw5.addLawnmower(quickPlayPane);
 
-        peashooterCardImageView.setOnMouseDragged(mouseEvent -> {
-
+        zombieFlyingImageView.setOnMouseClicked(mouseEvent -> {
+            lw1.unleashLawnmower(quickPlayPane);
         });
+
+        quickPlayPane.setOnMouseClicked(mouseEvent -> {
+            System.out.println("X: "+mouseEvent.getX());
+            System.out.println("Y: "+mouseEvent.getY() );
+        });
+
 
         Scene quickPlayScene = new Scene(quickPlayPane);
         primaryStage.setScene(quickPlayScene);
         primaryStage.show();
-
 }}
