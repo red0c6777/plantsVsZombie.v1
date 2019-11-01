@@ -23,43 +23,6 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicReference;
 
-class Plant{
-    int health;
-    int attack;
-    int type;
-}
-
-class PeaShooter extends Plant {
-
-    Image peaShooterImage;
-    ImageView peaShooterImageView;
-
-    PeaShooter() throws FileNotFoundException {
-        peaShooterImage = new Image(new FileInputStream("res\\images\\plant\\peashooter.png"));
-        peaShooterImageView = new ImageView(peaShooterImage);
-    }
-
-
-    void attack(){
-
-    }
-
-}
-
-class SunFlower extends Plant{
-
-    Image sunFlowerImage;
-    ImageView sunFlowerImageView;
-
-    SunFlower() throws FileNotFoundException{
-        sunFlowerImage = new Image(new FileInputStream("res\\images\\plant\\sunflower.png"));
-        sunFlowerImageView = new ImageView(sunFlowerImage);
-    }
-    void giveSun(){
-
-    }
-}
-
 public class Main extends Application {
 
     @Override
@@ -85,6 +48,7 @@ public class Main extends Application {
         Image exitButtonImage = new Image(new FileInputStream("res\\images\\button\\exitButton.png"),120,50,false,false);
         Image quickPlayButtonImage = new Image(new FileInputStream("res\\images\\button\\quickPlayButton.png"),120,50,false,false);
         Image leaderboardButtonImage = new Image(new FileInputStream("res\\images\\button\\leaderboardButton.png"),140,50,false,false);
+        Image selectLevelImage = new Image(new FileInputStream("res\\images\\button\\selectLevelButton.png"),120,50,false,false);
         ImageView loadingImageImageView = new ImageView(loadingImage);
 
         //Creating the buttons
@@ -93,12 +57,14 @@ public class Main extends Application {
         Button exitButton = new Button();
         Button quickPlayButton = new Button();
         Button leaderboardButton = new Button();
+        Button selectLevelButton = new Button();
 
         newGameButton.setGraphic(new ImageView(newGameButtonImage));
         loadGameButton.setGraphic(new ImageView(loadGameButtonImage));
         exitButton.setGraphic(new ImageView(exitButtonImage));
         quickPlayButton.setGraphic(new ImageView(quickPlayButtonImage));
         leaderboardButton.setGraphic(new ImageView(leaderboardButtonImage));
+        selectLevelButton.setGraphic(new ImageView(selectLevelImage));
 
 
         newGameButton.setPadding(new Insets(-1f,-1f,-1f,-1f));
@@ -106,13 +72,14 @@ public class Main extends Application {
         exitButton.setPadding(new Insets(-1f,-1f,-1f,-1f));
         quickPlayButton.setPadding(new Insets(-1f,-1f,-1f,-1f));
         leaderboardButton.setPadding(new Insets(-1f,-1f,-1f,-1f));
+        selectLevelButton.setPadding(new Insets(-1f,-1f,-1f,-1f));
 
         newGameButton.addEventHandler(MouseEvent.MOUSE_ENTERED,(event) -> newGameButton.setEffect(borderGlow));
         newGameButton.addEventHandler(MouseEvent.MOUSE_EXITED,(event) -> newGameButton.setEffect(null));
         newGameButton.setOnAction(actionEvent -> {
             try {
-                newGame(primaryStage);
-                gameLevel gamelevel = new gameLevel();
+                //newGame(primaryStage);
+                gameLevel gamelevel = new gameLevel(1);
                 gamelevel.start(primaryStage);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -140,8 +107,7 @@ public class Main extends Application {
         quickPlayButton.setOnAction(actionEvent -> {
             try {
                 //quickPlay(primaryStage);
-                gameLevel gamelevel = new gameLevel();
-                gamelevel.setLevel(3);
+                gameLevel gamelevel = new gameLevel(3);
                 gamelevel.start(primaryStage);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -161,8 +127,18 @@ public class Main extends Application {
             }
         });
 
+        selectLevelButton.addEventHandler(MouseEvent.MOUSE_ENTERED,(event) -> selectLevelButton.setEffect(borderGlow));
+        selectLevelButton.addEventHandler(MouseEvent.MOUSE_EXITED,(event) -> selectLevelButton.setEffect(null));
+        selectLevelButton.setOnAction(actionEvent -> {
+            try {
+                selectLevel(primaryStage);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Could not select level!");
+            }
+        });
 
-        menuBox.getChildren().addAll(quickPlayButton,newGameButton,loadGameButton,exitButton);
+        menuBox.getChildren().addAll(quickPlayButton,newGameButton,loadGameButton,selectLevelButton,exitButton);
         menuBox.setSpacing(5f);
 
         mainMenuPane.getChildren().addAll(loadingImageImageView,menuBox,leaderboardButton);
@@ -245,17 +221,60 @@ public class Main extends Application {
     }
 
     void quickPlay(Stage primaryStage) throws Exception{
-        /*Image lawnImage = new Image(new FileInputStream("res\\images\\lawn\\lawnHD_crop.jpg"),1280,720,false,false);
-        ImageView lawnImageView = new ImageView(lawnImage);
-
-        Pane quickPlayPane = new Pane();
-        quickPlayPane.getChildren().add(lawnImageView);
-        Scene quickPlayScene = new Scene(quickPlayPane);
-
-        primaryStage.setScene(quickPlayScene);
-        primaryStage.show();
-        */
         startLevel(primaryStage,1);
+    }
+
+    void selectLevel(Stage primaryStage) throws FileNotFoundException {
+        Pane selectLevelPane = new Pane();
+        Image bg = new Image(new FileInputStream("res\\images\\selectLevelBackground.jpg"),1280,720,false,false);
+        Image selectLevelFlagImage = new Image(new FileInputStream("res\\images\\selectLevelFlag.png"));
+        ImageView selectLevelFlagImageView = new ImageView(selectLevelFlagImage);
+        selectLevelFlagImageView.setPreserveRatio(true);
+        selectLevelFlagImageView.setFitWidth(700);
+        selectLevelFlagImageView.setLayoutX(290);
+        selectLevelFlagImageView.setLayoutY(100);
+
+        HBox levelButtons = new HBox();
+        Button l1 = new Button();
+        l1.setId("1");
+        l1.setGraphic(new ImageView(new Image(new FileInputStream("res\\images\\button\\l1Button.png"),120,50,false,false)));
+        l1.setPadding(new Insets(-2f));
+
+        Button l2 = new Button();
+        l2.setId("2");
+        l2.setGraphic(new ImageView(new Image(new FileInputStream("res\\images\\button\\l2Button.png"),120,50,false,false)));
+        l2.setPadding(new Insets(-2f));
+
+        Button l3 = new Button();
+        l3.setId("3");
+        l3.setGraphic(new ImageView(new Image(new FileInputStream("res\\images\\button\\l3Button.png"),120,50,false,false)));
+        l3.setPadding(new Insets(-2f));
+
+        Button l4 = new Button();
+        l4.setId("4");
+        l4.setGraphic(new ImageView(new Image(new FileInputStream("res\\images\\button\\l4Button.png"),120,50,false,false)));
+        l4.setPadding(new Insets(-2f));
+
+        Button l5 = new Button();
+        l5.setId("5");
+        l5.setGraphic(new ImageView(new Image(new FileInputStream("res\\images\\button\\l5Button.png"),120,50,false,false)));
+        l5.setPadding(new Insets(-2f));
+
+        levelButtons.getChildren().addAll(l1,l2,l3,l4,l5);
+        levelButtons.setSpacing(10f);
+
+        levelButtons.setLayoutY(350);
+        levelButtons.setLayoutX(320);
+
+        l1.setOnMouseClicked(new selectLevelController(primaryStage ,1));
+        l2.setOnMouseClicked(new selectLevelController(primaryStage,2));
+        l3.setOnMouseClicked(new selectLevelController(primaryStage,3));
+        l4.setOnMouseClicked(new selectLevelController(primaryStage,4));
+        l5.setOnMouseClicked(new selectLevelController(primaryStage,5));
+
+        selectLevelPane.getChildren().addAll(new ImageView(bg),selectLevelFlagImageView,levelButtons);
+        Scene selectLevelScene = new Scene(selectLevelPane);
+        primaryStage.setScene(selectLevelScene);
     }
 
     void startLevel(Stage primaryStage,int level)throws Exception{
