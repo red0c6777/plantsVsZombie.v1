@@ -50,6 +50,7 @@ public class plant {
     }
 
     void removePlantFromLawn(Pane quickPlayPane){
+        plantpane.getChildren().remove(plantImageView);
         quickPlayPane.getChildren().remove(this.plantpane);
     }
 }

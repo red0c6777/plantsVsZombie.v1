@@ -21,14 +21,17 @@ import javafx.scene.text.Text;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Stack;
 
 public class gameLevel extends Application {
 
     int level;
+    ArrayList<pea> peaList;
+    ArrayList<zombie> zombiesList;
+    ArrayList<plant> plantList;
 
     public gameLevel(int l){
         this.level = l;
@@ -41,9 +44,12 @@ public class gameLevel extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
+        plantList = new ArrayList<>();
+        zombiesList = new ArrayList<>();
+        peaList = new ArrayList<>();
+
 
         System.out.println("Starting the level!");
-
         //Creating glow effect for button glowing when cursor is hovered on them
         DropShadow borderGlow = new DropShadow();
         borderGlow.setOffsetY(0f);
@@ -215,12 +221,10 @@ public class gameLevel extends Application {
         primaryStage.setMaxWidth(1280);
 
         ImageView lawnImageView = new ImageView(lawnImage);
-        ImageView zombieFlyingImageView = new ImageView(zombieFlyingimage);
+
         Pane quickPlayPane = new Pane();
 
-        zombieFlyingImageView.setX(1300);
-        zombieFlyingImageView.setY(40);
-
+        /*
         //Zombie walking/flying animation:
         TranslateTransition zombieMovingTransition = new TranslateTransition();
         zombieMovingTransition.setDuration(Duration.seconds(40));
@@ -229,6 +233,7 @@ public class gameLevel extends Application {
         zombieMovingTransition.setCycleCount(1);
         zombieMovingTransition.setAutoReverse(false);
         zombieMovingTransition.play();
+        */
 
         //Plant slots VBox:
         VBox plantSlots = new VBox();
@@ -330,7 +335,13 @@ public class gameLevel extends Application {
 
                 try {
                     plant newPlant = new plant(plantType,row,column,posX,posY);
+                    plantList.add(newPlant);
                     newPlant.addPlantToLawn(quickPlayPane);
+                    if(plantType == "peashooter") {
+                        pea newPea = new pea(posX+80, posY+18);
+                        peaList.add(newPea);
+                        newPea.addPeaToLawn(quickPlayPane);
+                    }
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                     System.out.println("Cannot create plant!");
@@ -354,7 +365,7 @@ public class gameLevel extends Application {
         planterZone.setHgap(25);
 
 
-        quickPlayPane.getChildren().addAll(lawnImageView, barImageView, zombieFlyingImageView, plantSlots, sunCountL, pauseButton);
+        quickPlayPane.getChildren().addAll(lawnImageView, barImageView, plantSlots, sunCountL, pauseButton);
 
         //Placing the lawnmowers:
         lawnmower lw1 = new lawnmower(1);
@@ -368,17 +379,28 @@ public class gameLevel extends Application {
         lawnmower lw5 = new lawnmower(5);
         lw5.addLawnmower(quickPlayPane);
 
-        zombieFlyingImageView.setOnMouseClicked(mouseEvent -> {
+        /*zombieFlyingImageView.setOnMouseClicked(mouseEvent -> {
             lw1.unleashLawnmower(quickPlayPane);
         });
+         */
 
         quickPlayPane.setOnMouseClicked(mouseEvent -> {
             System.out.println("X: "+mouseEvent.getX());
             System.out.println("Y: "+mouseEvent.getY() );
         });
 
+        //Spawning zombies:
+        for(int i=0;i<level*3;i++) {
+            zombiesList.add(zombie.zombieSpawner(quickPlayPane));
+        }
+
+
+        gameAllMighty gameController = new gameAllMighty(plantList,zombiesList,peaList);
+        gameController.initialize();
 
         Scene quickPlayScene = new Scene(quickPlayPane);
+
+
         primaryStage.setScene(quickPlayScene);
         primaryStage.show();
 }}
