@@ -17,6 +17,8 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
@@ -26,12 +28,22 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Stack;
 
+/*
+
+@author - Harsh
+
+*/
+
 public class gameLevel extends Application {
 
+    Pane quickPlayPane;
     int level;
     ArrayList<pea> peaList;
     ArrayList<zombie> zombiesList;
     ArrayList<plant> plantList;
+    ArrayList<lawnmower> lawnmowerArrayList;
+    int sunCount;
+    Text sunLabel = new Text();
 
     public gameLevel(int l){
         this.level = l;
@@ -47,6 +59,7 @@ public class gameLevel extends Application {
         plantList = new ArrayList<>();
         zombiesList = new ArrayList<>();
         peaList = new ArrayList<>();
+        lawnmowerArrayList = new ArrayList<>();
 
 
         System.out.println("Starting the level!");
@@ -65,12 +78,6 @@ public class gameLevel extends Application {
         plantGlow.setWidth(150);
         plantGlow.setHeight(150);
 
-        //Sun counter
-
-        int sunCount = 0;
-        Text sunCountL = new Text();
-        sunCountL.setText(Integer.toString(sunCount));
-
         //Button images and image Views
 
         Image pauseButtonImage = new Image(new FileInputStream("res\\images\\button\\pauseButton.png"));
@@ -81,10 +88,14 @@ public class gameLevel extends Application {
         ImageView resumeButtonImageView = new ImageView(resumeButtonImage);
         Image exitButtonImage = new Image(new FileInputStream("res\\images\\button\\exitButtonPauseMenu.png"));
         ImageView exitButtonImageView = new ImageView(exitButtonImage);
+        Image saveGameButtonImage = new Image(new FileInputStream("res\\images\\button\\saveGameButton.png"));
+        ImageView saveGameButtonImageView = new ImageView(saveGameButtonImage);
         resumeButtonImageView.setPreserveRatio((true));
         resumeButtonImageView.setFitWidth(150);
         exitButtonImageView.setPreserveRatio(true);
         exitButtonImageView.setFitWidth(150);
+        saveGameButtonImageView.setPreserveRatio(true);
+        saveGameButtonImageView.setFitWidth(150);
 
         Image lawnImage = new Image(new FileInputStream("res\\images\\lawn\\lawnHD_crop.jpg"), 1280, 720, false, false);
         Image zombieFlyingimage = new Image(new FileInputStream("res\\images\\zombie\\zombieFlying.gif"), 114, 144, false, false);
@@ -130,11 +141,16 @@ public class gameLevel extends Application {
         exitButton.setGraphic(exitButtonImageView);
         exitButton.setPadding(new Insets(-3, -3, -3, -3));
 
+        //-----------------Save Game Button--------------------
+        Button saveGameButton = new Button();
+        saveGameButton.setGraphic(saveGameButtonImageView);
+        saveGameButton.setPadding(new Insets(-3, -3, -3, -3));
+
 
         //Pause Box for buttons:
 
         VBox pauseMenuBox = new VBox();
-        pauseMenuBox.getChildren().addAll(resumeButton, exitButton);
+        pauseMenuBox.getChildren().addAll(saveGameButton, exitButton);
         pauseMenuBox.setSpacing(10f);
         pauseMenuBox.setLayoutX(105);
         pauseMenuBox.setLayoutY(250);
@@ -191,8 +207,7 @@ public class gameLevel extends Application {
         exitButton.addEventHandler(MouseEvent.MOUSE_EXITED, (event) -> exitButton.setEffect(null));
         exitButton.setOnAction(actionEvent -> {
             try {
-                menuPopUp.hide();
-                start(primaryStage);
+                System.exit(0);
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("Could not exit");
@@ -222,18 +237,7 @@ public class gameLevel extends Application {
 
         ImageView lawnImageView = new ImageView(lawnImage);
 
-        Pane quickPlayPane = new Pane();
-
-        /*
-        //Zombie walking/flying animation:
-        TranslateTransition zombieMovingTransition = new TranslateTransition();
-        zombieMovingTransition.setDuration(Duration.seconds(40));
-        zombieMovingTransition.setNode(zombieFlyingImageView);
-        zombieMovingTransition.setByX(-1040);
-        zombieMovingTransition.setCycleCount(1);
-        zombieMovingTransition.setAutoReverse(false);
-        zombieMovingTransition.play();
-        */
+        quickPlayPane = new Pane();
 
         //Plant slots VBox:
         VBox plantSlots = new VBox();
@@ -244,12 +248,6 @@ public class gameLevel extends Application {
 
         double startDragX = 10;
         double startDragY = 60;
-
-        peashooterCardImageView.setOnMouseClicked(mouseEvent -> {
-            System.out.println("peashooter  clicked");
-            peashooterCardImageView.setEffect(borderGlow);
-        });
-
 
         peashooterCardImageView.setOnDragDetected(new draggingPlantController(peashooterCardImageView,peashooterImage));
         sunflowerCardImageView.setOnDragDetected(new draggingPlantController(sunflowerCardImageView,sunflowerImage));
@@ -338,7 +336,7 @@ public class gameLevel extends Application {
                     plantList.add(newPlant);
                     newPlant.addPlantToLawn(quickPlayPane);
                     if(plantType == "peashooter") {
-                        pea newPea = new pea(posX+80, posY+18);
+                        pea newPea = new pea(posX+80, posY+30);
                         peaList.add(newPea);
                         newPea.addPeaToLawn(quickPlayPane);
                     }
@@ -353,40 +351,48 @@ public class gameLevel extends Application {
 
         });
 
-
-
-
-        sunCountL.setX(100);
-        sunCountL.setFont(Font.font(40));
-
         planterZone.setLayoutX(300);
         planterZone.setLayoutY(100);
         planterZone.setVgap(40);
         planterZone.setHgap(25);
 
 
-        quickPlayPane.getChildren().addAll(lawnImageView, barImageView, plantSlots, sunCountL, pauseButton);
+        sunLabel.setText(Integer.toString(sunCount));
+        sunLabel.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 20));
+        sunLabel.setX(40);
+        sunLabel.setY(132);
+
+
+        quickPlayPane.getChildren().addAll(lawnImageView, barImageView, plantSlots, pauseButton,sunLabel);
 
         //Placing the lawnmowers:
         lawnmower lw1 = new lawnmower(1);
+        lawnmowerArrayList.add(lw1);
         lw1.addLawnmower(quickPlayPane);
+
         lawnmower lw2 = new lawnmower(2);
+        lawnmowerArrayList.add(lw2);
         lw2.addLawnmower(quickPlayPane);
+
         lawnmower lw3 = new lawnmower(3);
+        lawnmowerArrayList.add(lw3);
         lw3.addLawnmower(quickPlayPane);
+
         lawnmower lw4 = new lawnmower(4);
+        lawnmowerArrayList.add(lw4);
         lw4.addLawnmower(quickPlayPane);
+
         lawnmower lw5 = new lawnmower(5);
+        lawnmowerArrayList.add(lw5);
         lw5.addLawnmower(quickPlayPane);
 
-        /*zombieFlyingImageView.setOnMouseClicked(mouseEvent -> {
-            lw1.unleashLawnmower(quickPlayPane);
-        });
-         */
-
         quickPlayPane.setOnMouseClicked(mouseEvent -> {
+            double mousePosX = mouseEvent.getX();
+            double mousePosY = mouseEvent.getY();
             System.out.println("X: "+mouseEvent.getX());
-            System.out.println("Y: "+mouseEvent.getY() );
+            System.out.println("Y: "+mouseEvent.getY());
+            collectSun(mousePosX,mousePosY);
+
         });
 
         //Spawning zombies:
@@ -395,7 +401,7 @@ public class gameLevel extends Application {
         }
 
 
-        gameAllMighty gameController = new gameAllMighty(plantList,zombiesList,peaList);
+        gameAllMighty gameController = new gameAllMighty(quickPlayPane,plantList,zombiesList,peaList,lawnmowerArrayList);
         gameController.initialize();
 
         Scene quickPlayScene = new Scene(quickPlayPane);
@@ -403,4 +409,21 @@ public class gameLevel extends Application {
 
         primaryStage.setScene(quickPlayScene);
         primaryStage.show();
-}}
+}
+
+    private void collectSun(double mousePosX, double mousePosY) {
+        ArrayList<sun> sunList = gameAllMighty.getSunList();
+        for(sun s : sunList){
+            System.out.println("Sun x: "+s.getPosX());
+            System.out.println("Sun y: "+s.getPosY());
+            if(mousePosX >= s.getPosX() && mousePosX <= s.getPosX()+40 && mousePosY >= s.getPosY() && mousePosY <= s.getPosY()+40){
+                sunCount+=50;
+                s.getPane().getChildren().removeAll();
+                quickPlayPane.getChildren().remove(s.getPane());
+                gameAllMighty.removeSun(s);
+                sunLabel.setText(Integer.toString(sunCount));
+                System.out.println("Sun Total: "+sunCount);
+            }
+        }
+    }
+}

@@ -9,18 +9,20 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
 public class pea {
-    Image image = new Image(new FileInputStream("res\\images\\pea.png"));
-    ImageView imageView = new ImageView(image);
-    StackPane stackPane;
-    double speed = 1;
-    double posX;
-    double posY;
+    private Image image = new Image(new FileInputStream("res\\images\\pea.png"));
+    private ImageView imageView = new ImageView(image);
+    private StackPane stackPane;
+    private double speed = 1;
+    private double sourceX;
+    private double sourceY;
+    private double posX;
+    private double posY;
 
     public pea(double px,double py) throws FileNotFoundException {
         stackPane = new StackPane();
         stackPane.getChildren().add(imageView);
-        this.posX = px;
-        this.posY = py;
+        this.sourceX = this.posX = px;
+        this.sourceY = this.posY = py;
         stackPane.setLayoutX(posX);
         stackPane.setLayoutY(posY);
     }
@@ -34,5 +36,17 @@ public class pea {
 
     public void removePea() {
 
+    }
+
+    protected double getPosX(){
+        return this.stackPane.getLayoutX();
+    }
+
+    protected double getSourceX(){
+        return this.sourceX;
+    }
+
+    protected void setPosX(double x){
+        this.stackPane.setLayoutX(x);
     }
 }
