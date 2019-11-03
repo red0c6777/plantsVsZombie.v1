@@ -17,9 +17,11 @@ public class lawnmower {
     double posX = 200;
     double posY;
     StackPane pane;
+    boolean alreadyUnleashed;
 
     public lawnmower(int r) throws FileNotFoundException {
         this.row = r;
+        alreadyUnleashed = false;
         pane = new StackPane();
         imageview.setPreserveRatio(true);
         imageview.setFitWidth(125);
@@ -57,5 +59,12 @@ public class lawnmower {
         lawnmowerMowing.setCycleCount(1);
         lawnmowerMowing.setAutoReverse(false);
         lawnmowerMowing.play();
+    }
+    boolean isAlreadyUnleashed(){
+        return this.alreadyUnleashed;
+    }
+
+    int getRow(){
+        return this.row;
     }
 }

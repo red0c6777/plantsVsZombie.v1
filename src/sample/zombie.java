@@ -17,6 +17,7 @@ public class zombie {
     ImageView imageview = new ImageView(image);
     int posX;
     int posY;
+    int row;
     int health;
     double speed;
     int type;
@@ -38,21 +39,26 @@ public class zombie {
         switch(randomRow){
             case 1:
                 newZombie.initialPosY = 78;
+                newZombie.row = 1;
                 break;
             case 2:
                 newZombie.initialPosY = 199;
+                newZombie.row = 2;
                 break;
             case 3:
                 newZombie.initialPosY = 319;
+                newZombie.row = 3;
                 break;
             case 4:
                 newZombie.initialPosY = 440;
+                newZombie.row = 4;
                 break;
             case 5:
                 newZombie.initialPosY = 562;
+                newZombie.row = 5;
                 break;
         }
-        newZombie.initialPosX = (1000 + rand.nextInt(500));
+        newZombie.initialPosX = (1280 + rand.nextInt(10000));
 
         newZombie.zombiePane.setLayoutX(newZombie.initialPosX);
         newZombie.zombiePane.setLayoutY(newZombie.initialPosY);
@@ -71,5 +77,17 @@ public class zombie {
 
     void step(){
         this.zombiePane.setLayoutX(this.zombiePane.getLayoutX() - speed);
+    }
+
+    protected double getPosX(){
+        return this.zombiePane.getLayoutX();
+    }
+
+    protected double getPos(){
+        return  this.zombiePane.getLayoutY();
+    }
+
+    public int getRow() {
+        return this.row;
     }
 }
