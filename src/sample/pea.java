@@ -17,12 +17,14 @@ public class pea {
     private double sourceY;
     private double posX;
     private double posY;
+    private double damage;
 
     public pea(double px,double py) throws FileNotFoundException {
         stackPane = new StackPane();
         stackPane.getChildren().add(imageView);
         this.sourceX = this.posX = px;
         this.sourceY = this.posY = py;
+        this.damage = 20; // Damage of the pea set here
         stackPane.setLayoutX(posX);
         stackPane.setLayoutY(posY);
     }
@@ -34,13 +36,19 @@ public class pea {
         this.stackPane.setLayoutX(this.stackPane.getLayoutX() + speed);
     }
 
-    public void removePea() {
-
+    public void removePea(Pane primaryPane) {
+        stackPane.getChildren().remove(imageView);
+        primaryPane.getChildren().remove(stackPane);
     }
 
     protected double getPosX(){
         return this.stackPane.getLayoutX();
     }
+
+    protected double getPosY(){
+        return this.stackPane.getLayoutY();
+    }
+
 
     protected double getSourceX(){
         return this.sourceX;
@@ -48,5 +56,9 @@ public class pea {
 
     protected void setPosX(double x){
         this.stackPane.setLayoutX(x);
+    }
+
+    protected double getDamage(){
+        return this.damage;
     }
 }

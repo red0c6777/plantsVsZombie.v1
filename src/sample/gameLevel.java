@@ -38,7 +38,7 @@ public class gameLevel extends Application {
 
     Pane quickPlayPane;
     int level;
-    ArrayList<pea> peaList;
+    ArrayList<plant> peaShooterList;
     ArrayList<zombie> zombiesList;
     ArrayList<plant> plantList;
     ArrayList<lawnmower> lawnmowerArrayList;
@@ -58,7 +58,7 @@ public class gameLevel extends Application {
 
         plantList = new ArrayList<>();
         zombiesList = new ArrayList<>();
-        peaList = new ArrayList<>();
+        peaShooterList = new ArrayList<>();
         lawnmowerArrayList = new ArrayList<>();
 
 
@@ -336,9 +336,10 @@ public class gameLevel extends Application {
                     plantList.add(newPlant);
                     newPlant.addPlantToLawn(quickPlayPane);
                     if(plantType == "peashooter") {
-                        pea newPea = new pea(posX+80, posY+30);
-                        peaList.add(newPea);
-                        newPea.addPeaToLawn(quickPlayPane);
+                        peaShooterList.add(newPlant);
+                        //pea newPea = new pea(posX+80, posY+30);
+                        //peaList.add(newPea);
+                        //newPea.addPeaToLawn(quickPlayPane);
                     }
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
@@ -401,7 +402,7 @@ public class gameLevel extends Application {
         }
 
 
-        gameAllMighty gameController = new gameAllMighty(quickPlayPane,plantList,zombiesList,peaList,lawnmowerArrayList);
+        gameAllMighty gameController = new gameAllMighty(quickPlayPane,plantList,zombiesList,lawnmowerArrayList,peaShooterList);
         gameController.initialize();
 
         Scene quickPlayScene = new Scene(quickPlayPane);
@@ -413,17 +414,23 @@ public class gameLevel extends Application {
 
     private void collectSun(double mousePosX, double mousePosY) {
         ArrayList<sun> sunList = gameAllMighty.getSunList();
+        ArrayList<sun> sunToRemove = new ArrayList();
         for(sun s : sunList){
             System.out.println("Sun x: "+s.getPosX());
             System.out.println("Sun y: "+s.getPosY());
             if(mousePosX >= s.getPosX() && mousePosX <= s.getPosX()+40 && mousePosY >= s.getPosY() && mousePosY <= s.getPosY()+40){
                 sunCount+=50;
-                s.getPane().getChildren().removeAll();
-                quickPlayPane.getChildren().remove(s.getPane());
-                gameAllMighty.removeSun(s);
+                sunToRemove.add(s);
                 sunLabel.setText(Integer.toString(sunCount));
                 System.out.println("Sun Total: "+sunCount);
             }
         }
+        //removing collected sun:
+        for(sun str: sunToRemove){
+            str.getPane().getChildren().removeAll();
+            quickPlayPane.getChildren().remove(str.getPane());
+            gameAllMighty.removeSun(str);
+        }
+        sunToRemove.clear();
     }
 }
