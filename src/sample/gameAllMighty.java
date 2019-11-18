@@ -2,7 +2,6 @@ package sample;
 
 import javafx.application.Platform;
 import javafx.event.EventHandler;
-import javafx.geometry.Pos;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
@@ -15,7 +14,6 @@ import javafx.scene.text.Text;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -27,6 +25,7 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
     ArrayList<plant> plantArrayList;
     ArrayList<zombie> zombieArrayList;
     ArrayList<pea> peaArrayList;
+    ArrayList<plant> peaShooterArrayList;
     ArrayList<lawnmower> lawnmowerArrayList;
     static ArrayList<sun> sunArrayList = new ArrayList<>();
     private Timer timer;
@@ -34,13 +33,18 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
     int secondsPassed;
     Text clock;
     StackPane clockPane;
+    boolean gameLost;
+    boolean gameWin;
 
-    public gameAllMighty(Pane pp,ArrayList<plant> pl, ArrayList<zombie> zo,ArrayList<pea> pe,ArrayList<lawnmower> lw){
+    public gameAllMighty(Pane pp,ArrayList<plant> pl, ArrayList<zombie> zo,ArrayList<lawnmower> lw,ArrayList<plant> psal){
         primaryPane = pp;
         plantArrayList = pl;
         zombieArrayList = zo;
-        peaArrayList = pe;
+        peaArrayList = new ArrayList<>();
+        peaShooterArrayList = psal;
         lawnmowerArrayList = lw;
+        gameLost = false;
+        gameWin = false;
     }
 
     protected static void removeSun(sun s) {
@@ -50,7 +54,29 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
     public void initialize() throws FileNotFoundException {
         this.startTimer();
         this.startSunSpawner();
+        this.startPeaSpawner();
         this.startClock();
+    }
+
+    private void startPeaSpawner() {
+        this.timer = new java.util.Timer();
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            peaSpawner();
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        };
+        long sunTimer = (long) 3000; //3 seconds
+        this.timer.schedule(timerTask,10,sunTimer);
     }
 
     private void startClock() throws FileNotFoundException {
@@ -91,7 +117,11 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
-                        updateGame();
+                        try {
+                            updateGame();
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
                     }
                 });
             }
@@ -117,43 +147,99 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
                 });
             }
         };
-        long sunTimer = (long) 3000; //10 seconds
+        long sunTimer = (long) 10000; //10 seconds
         this.timer.schedule(timerTask,10,sunTimer);
     }
 
-    private void updateGame(){
+    private void updateGame() throws FileNotFoundException {
         //checkingFight();
         updateAnimation();
         checkingFight();
     }
 
-    private void updateAnimation() {
-        throwPea();
+    private void updateAnimation() throws FileNotFoundException {
+        peaStepper();
         for(zombie z : zombieArrayList){
             z.step();
         }
     }
 
-    private void throwPea() {
-        for (pea p : peaArrayList){
-            if(p.getPosX() > 1280 + p.getSourceX()){
-                p.setPosX(p.getSourceX());
-            }
-            p.step();
+    private void peaSpawner() throws FileNotFoundException {
+        for(plant ps: peaShooterArrayList) {
+            pea newPea = new pea(ps.getPosX()+80, ps.getPosY()+30);
+            peaArrayList.add(newPea);
+            newPea.addPeaToLawn(primaryPane);
         }
     }
 
+    private void peaStepper() throws FileNotFoundException {
+        ArrayList<pea> peaToRemove = new ArrayList<>();
+        for (pea p : peaArrayList){
+            if(p.getPosX() < 1280){
+               p.step();
+            }
+            else
+                peaToRemove.add(p);
+        }
+        for(pea ptr: peaToRemove){
+            ptr.removePea(primaryPane);
+            peaArrayList.remove(ptr);
+        }
+        peaToRemove.clear();
+    }
+
     void checkingFight(){  //TODO : Stopping lawnmover when out of screen
+
+        ArrayList<pea> peasToRemove = new ArrayList();
+        ArrayList<zombie> zombiesToRemove = new ArrayList();
+        //Checking if zombie is hit by pea or crossed the lawn
         for(zombie z : zombieArrayList){
+            if(z.getPosX() < 1219){ //checking if peas hit he zombies after appearing on the lawn
+                for(pea p: peaArrayList){
+                    if((z.getPosX() <= p.getPosX() && p.getPosX() <= z.getPosX()+114) && (z.getPosY() <= p.getPosY() && p.getPosY() <= z.getPosY()+144)){
+                        System.out.println("Pea hit zombie");
+                        //adding the pea to remove list
+                        peasToRemove.add(p);
+                        z.damage(p.getDamage());
+                        if(z.health <= 0)
+                            zombiesToRemove.add(z);
+                    }
+                }
+                //removing the peas which were used:
+                for (pea ptr: peasToRemove){
+                    ptr.removePea(primaryPane);
+                    peaArrayList.remove(ptr);
+                }
+                peasToRemove.clear();
+
+            }
             if(z.getPosX() <= 280){
                 int zombieRow = z.getRow();
                 for (lawnmower lw : lawnmowerArrayList){
                     if (lw.getRow() == zombieRow && !(lw.alreadyUnleashed)){
-                        lw.alreadyUnleashed = true;
-                        lw.unleashLawnmower(primaryPane);
+                        if(lw.alreadyUnleashed)
+                            gameLost = true;
+                        else {
+                            lw.alreadyUnleashed = true;
+                            lw.unleashLawnmower(primaryPane);
+                        }
                     }
                 }
             }
+        }
+        //removing zombies:
+        for (zombie ztr: zombiesToRemove){
+            ztr.dead(primaryPane);
+            zombieArrayList.remove(ztr);
+        }
+        zombiesToRemove.clear();
+
+
+        if(gameLost){
+            System.out.println("Game lost!");
+        }
+        if(gameWin){
+            System.out.println("You won this round!");
         }
     }
 

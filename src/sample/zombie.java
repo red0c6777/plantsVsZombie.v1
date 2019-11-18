@@ -70,7 +70,7 @@ public class zombie {
 
     }
 
-    void removeZombie(Pane primaryPane){
+    void dead(Pane primaryPane){
         zombiePane.getChildren().remove(imageview);
         primaryPane.getChildren().remove(zombiePane);
     }
@@ -83,11 +83,19 @@ public class zombie {
         return this.zombiePane.getLayoutX();
     }
 
+    protected double getPosY(){
+        return this.zombiePane.getLayoutY();
+    }
+
     protected double getPos(){
         return  this.zombiePane.getLayoutY();
     }
 
     public int getRow() {
         return this.row;
+    }
+
+    protected void damage(double d) {
+        this.health -= d;
     }
 }

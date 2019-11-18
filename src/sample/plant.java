@@ -53,4 +53,35 @@ public class plant {
         plantpane.getChildren().remove(plantImageView);
         quickPlayPane.getChildren().remove(this.plantpane);
     }
+
+    protected double getPosX(){
+        return this.posX;
+    }
+
+    protected double getPosY(){
+        return this.posY;
+    }
 }
+
+class peaShooter extends plant{
+
+    public peaShooter(String pt, int r, int c, double px, double py) throws FileNotFoundException {
+        super("peashooter", r, c, px, py);
+    }
+}
+
+class sunFlower extends plant{
+
+    public sunFlower(String pt, int r, int c, double px, double py) throws FileNotFoundException {
+        super("sunflower", r, c, px, py);
+    }
+}
+
+class wallNut extends plant{
+
+    public wallNut(String pt, int r, int c, double px, double py) throws FileNotFoundException {
+        super("wallnut", r, c, px, py);
+    }
+}
+
+
