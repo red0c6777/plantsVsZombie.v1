@@ -12,14 +12,15 @@ import java.util.ArrayList;
 import java.util.Stack;
 
 public class plant {
-    int row;
-    int column;
-    double posX;
-    double posY;
-    String plantType;
-    StackPane plantpane;
-    Image plantImage;
-    ImageView plantImageView;
+    private int row;
+    private int column;
+    private double posX;
+    private double posY;
+    double health;
+    private String plantType;
+    private StackPane plantpane;
+    private Image plantImage;
+    private ImageView plantImageView;
 
     public plant (String pt, int r, int c, double px, double py) throws FileNotFoundException{
         this.plantType = pt;
@@ -28,12 +29,19 @@ public class plant {
         switch(pt){
             case "peashooter":
                 plantImage = new Image(new FileInputStream("res\\images\\plant\\peashooter.png"));
+                health = 100;
                 break;
             case "sunflower":
                 plantImage = new Image(new FileInputStream("res\\images\\plant\\sunflower.png"));
+                health = 100;
                 break;
             case "wallnut":
                 plantImage = new Image(new FileInputStream("res\\images\\plant\\wallnut.png"));
+                health = 500;
+                break;
+            case "potatomine":
+                plantImage = new Image(new FileInputStream("res\\images\\plant\\potatoMine.png"));
+                health = 50;
                 break;
         }
         this.plantImageView = new ImageView(plantImage);
@@ -61,26 +69,54 @@ public class plant {
     protected double getPosY(){
         return this.posY;
     }
+
+    public int getColumn() {
+        return column;
+    }
+
+    public int getRow(){
+        return row;
+    }
+
+    public double getHealth() {
+        return health;
+    }
+
+    public void setHealth(double health) {
+        this.health = health;
+    }
+
+    void dead(Pane primaryPane){
+        plantpane.getChildren().remove(plantImageView);
+        primaryPane.getChildren().remove(plantImage);
+    }
 }
 
 class peaShooter extends plant{
 
-    public peaShooter(String pt, int r, int c, double px, double py) throws FileNotFoundException {
+    public peaShooter(int r, int c, double px, double py) throws FileNotFoundException {
         super("peashooter", r, c, px, py);
     }
 }
 
 class sunFlower extends plant{
 
-    public sunFlower(String pt, int r, int c, double px, double py) throws FileNotFoundException {
+    public sunFlower(int r, int c, double px, double py) throws FileNotFoundException {
         super("sunflower", r, c, px, py);
     }
 }
 
 class wallNut extends plant{
 
-    public wallNut(String pt, int r, int c, double px, double py) throws FileNotFoundException {
+    public wallNut(int r, int c, double px, double py) throws FileNotFoundException {
         super("wallnut", r, c, px, py);
+    }
+}
+
+class potatoMine extends plant{
+
+    public potatoMine(int r, int c, double px, double py) throws FileNotFoundException {
+        super("potatomine", r, c, px, py);
     }
 }
 
