@@ -38,7 +38,10 @@ public class gameLevel extends Application {
 
     Pane quickPlayPane;
     int level;
-    ArrayList<plant> peaShooterList;
+    ArrayList<peaShooter> peaShooterArrayList;
+    ArrayList<sunFlower> sunFlowerArrayList;
+    ArrayList<wallNut> wallNutArrayList;
+    ArrayList<potatoMine> potatoMineArrayList;
     ArrayList<zombie> zombiesList;
     ArrayList<plant> plantList;
     ArrayList<lawnmower> lawnmowerArrayList;
@@ -58,8 +61,13 @@ public class gameLevel extends Application {
 
         plantList = new ArrayList<>();
         zombiesList = new ArrayList<>();
-        peaShooterList = new ArrayList<>();
+        peaShooterArrayList = new ArrayList<>();
+        sunFlowerArrayList = new ArrayList<>();
+        potatoMineArrayList = new ArrayList<>();
+        wallNutArrayList = new ArrayList<>();
         lawnmowerArrayList = new ArrayList<>();
+
+        sunCount = 500;
 
 
         System.out.println("Starting the level!");
@@ -104,13 +112,16 @@ public class gameLevel extends Application {
         Image sunflowerImage = new Image(new FileInputStream("res\\images\\plant\\sunflower.png"));
         Image peashooterImage = new Image(new FileInputStream("res\\images\\plant\\peashooter.png"));
         Image wallnutImage = new Image(new FileInputStream("res\\images\\plant\\wallnut.png"));
+        Image potatoMineImage = new Image(new FileInputStream("res\\images\\plant\\potatoMine.png"));
         Image peashooterCard = new Image(new FileInputStream("res\\images\\plant\\peashooterCard.png"));
         Image sunflowerCard = new Image(new FileInputStream("res\\images\\plant\\sunflowerCard.png"));
         Image wallnutCard = new Image(new FileInputStream("res\\images\\plant\\wallnutCard.png"));
+        Image potatoMineCard = new Image(new FileInputStream("res\\images\\plant\\potatoMineCard.png"));
         Image pauseMenuImage = new Image(new FileInputStream("res\\images\\button\\pauseMenuPicture.png"));
         ImageView peashooterCardImageView = new ImageView(peashooterCard);
         ImageView sunflowerCardImageView = new ImageView(sunflowerCard);
         ImageView wallnutCardImageView = new ImageView(wallnutCard);
+        ImageView potatoMineCardImageView = new ImageView(potatoMineCard);
         ImageView pauseMenuImageView = new ImageView(pauseMenuImage);
 
         Image lawnmowerImage = new Image(new FileInputStream("res\\images\\lawnmower.png"));
@@ -119,6 +130,7 @@ public class gameLevel extends Application {
         peashooterCardImageView.setId("peashooter");
         sunflowerCardImageView.setId("sunflower");
         wallnutCardImageView.setId("wallnut");
+        potatoMineCardImageView.setId("potatomine");
 
 
         pauseMenuImageView.setPreserveRatio(true);
@@ -160,23 +172,6 @@ public class gameLevel extends Application {
         menuPopUp.getContent().addAll(pauseMenuImageView, pauseMenuBox);
         menuPopUp.setAutoHide(true);
 
-        //Making planterZone gridBox
-
-        GridPane planterZone = new GridPane();
-
-        planterZone.setGridLinesVisible(true);
-
-        System.out.println(planterZone.getLayoutX());
-
-        for(int i=0;i<=8;i++){
-            for(int j=0;j<=4;j++){
-                planterZone.add(new ImageView(peashooterImage),i,j);
-            }
-        }
-
-        //planterZone.setAlignment(Pos.CENTER);
-
-        //planterZone.add(new ImageView(peashooterImage),0,0);
 
         //All the event handlers:
 
@@ -218,11 +213,13 @@ public class gameLevel extends Application {
         peashooterCardImageView.setPreserveRatio(true);
         wallnutCardImageView.setPreserveRatio(true);
         sunflowerCardImageView.setPreserveRatio(true);
+        potatoMineCardImageView.setPreserveRatio(true);
 
         int wid = 80;
         peashooterCardImageView.setFitWidth(wid);
         sunflowerCardImageView.setFitWidth(wid);
         wallnutCardImageView.setFitWidth(wid);
+        potatoMineCardImageView.setFitWidth(wid);
 
 
         Image barImage = new Image(new FileInputStream("res\\images\\bar.png"));
@@ -241,7 +238,7 @@ public class gameLevel extends Application {
 
         //Plant slots VBox:
         VBox plantSlots = new VBox();
-        plantSlots.getChildren().addAll(sunflowerCardImageView, peashooterCardImageView, wallnutCardImageView);
+        plantSlots.getChildren().addAll(sunflowerCardImageView, peashooterCardImageView, wallnutCardImageView,potatoMineCardImageView);
         plantSlots.setLayoutX(20);
         plantSlots.setLayoutY(150);
         plantSlots.setSpacing(2f);
@@ -252,6 +249,8 @@ public class gameLevel extends Application {
         peashooterCardImageView.setOnDragDetected(new draggingPlantController(peashooterCardImageView,peashooterImage));
         sunflowerCardImageView.setOnDragDetected(new draggingPlantController(sunflowerCardImageView,sunflowerImage));
         wallnutCardImageView.setOnDragDetected(new draggingPlantController(wallnutCardImageView,wallnutImage));
+        potatoMineCardImageView.setOnDragDetected(new draggingPlantController(potatoMineCardImageView,potatoMineImage));
+
 
         quickPlayPane.setOnDragOver(dragEvent -> {
             peashooterCardImageView.setEffect(null);
@@ -331,31 +330,72 @@ public class gameLevel extends Application {
 
                 System.out.println("Planting coord: row: "+row+"  column: "+column);
 
+                int rechargeTime = 1000;
+
                 try {
-                    plant newPlant = new plant(plantType,row,column,posX,posY);
-                    plantList.add(newPlant);
-                    newPlant.addPlantToLawn(quickPlayPane);
-                    if(plantType == "peashooter") {
-                        peaShooterList.add(newPlant);
-                        //pea newPea = new pea(posX+80, posY+30);
-                        //peaList.add(newPea);
-                        //newPea.addPeaToLawn(quickPlayPane);
+                    switch (plantType){
+                        case "peashooter":
+                            if(sunCount >= 100 && (gameAllMighty.getTimeElapsedSinceLastBought(1) > rechargeTime)){
+                                sunCount-=100;
+                                peaShooter newPlant = new peaShooter(row, column, posX, posY);
+                                plantList.add(newPlant);
+                                newPlant.addPlantToLawn(quickPlayPane);
+                                peaShooterArrayList.add(newPlant);
+                                gameAllMighty.resetTimeElapsedSinceLastBought(1);
+                            }
+                            else
+                                System.out.println("Not enough sun!");
+                            break;
+                        case "sunflower":
+                            if(sunCount >= 50 && (gameAllMighty.getTimeElapsedSinceLastBought(0) > rechargeTime)) {
+                                sunCount-=50;
+                                sunFlower newPlant = new sunFlower(row, column, posX, posY);
+                                plantList.add(newPlant);
+                                newPlant.addPlantToLawn(quickPlayPane);
+                                sunFlowerArrayList.add(newPlant);
+                                gameAllMighty.resetTimeElapsedSinceLastBought(0);
+                            }
+                            else
+                                System.out.println("Not enough sun!");
+                            break;
+                        case "potatomine":
+                            if(sunCount >= 150 && (gameAllMighty.getTimeElapsedSinceLastBought(3) > rechargeTime)) {
+                                sunCount-=150;
+                                potatoMine newPlant = new potatoMine(row, column, posX, posY);
+                                plantList.add(newPlant);
+                                newPlant.addPlantToLawn(quickPlayPane);
+                                potatoMineArrayList.add(newPlant);
+                                gameAllMighty.resetTimeElapsedSinceLastBought(3);
+                            }
+                            else
+                                System.out.println("Not enough sun!");
+                            break;
+                        case "wallnut":
+                            if(sunCount >= 50 && gameAllMighty.getTimeElapsedSinceLastBought(2) > rechargeTime) {
+                                sunCount-=50;
+                                wallNut newPlant = new wallNut(row, column, posX, posY);
+                                plantList.add(newPlant);
+                                newPlant.addPlantToLawn(quickPlayPane);
+                                wallNutArrayList.add(newPlant);
+                                gameAllMighty.resetTimeElapsedSinceLastBought(2);
+                            }
+                            else
+                                System.out.println("Not enough sun!");
+                            break;
+                        default:
+                            System.out.println("wrong or no id for plant!");
                     }
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                     System.out.println("Cannot create plant!");
                 }
+                sunLabel.setText(Integer.toString(sunCount)); //updating the sunCount
             }
             else{
                 System.out.println("Out of bounds for planting");
             }
 
         });
-
-        planterZone.setLayoutX(300);
-        planterZone.setLayoutY(100);
-        planterZone.setVgap(40);
-        planterZone.setHgap(25);
 
 
         sunLabel.setText(Integer.toString(sunCount));
@@ -401,8 +441,10 @@ public class gameLevel extends Application {
             zombiesList.add(zombie.zombieSpawner(quickPlayPane));
         }
 
+        int numberOfZombiesLeft = level*3;
 
-        gameAllMighty gameController = new gameAllMighty(quickPlayPane,plantList,zombiesList,lawnmowerArrayList,peaShooterList);
+
+        gameAllMighty gameController = new gameAllMighty(quickPlayPane,plantList,zombiesList,lawnmowerArrayList,peaShooterArrayList,sunFlowerArrayList,numberOfZombiesLeft);
         gameController.initialize();
 
         Scene quickPlayScene = new Scene(quickPlayPane);

@@ -24,7 +24,7 @@ public class draggingPlantController implements EventHandler<MouseEvent> {
         ClipboardContent content = new ClipboardContent();
         String id = this.plantImageView.getId();
         content.putImage(this.plantImage);
-        if(id == "peashooter" || id == "wallnut" || id == "sunflower")
+        if(id == "peashooter" || id == "wallnut" || id == "sunflower" || id == "potatomine")
             content.putString(id);
         else
             System.out.println("ERROR: not a valid id");

@@ -51,6 +51,14 @@ public class sun {
         return newSun;
     }
 
+    public  static sun sunFlowerSunSpawner(Pane primaryPane, double px, double py) throws FileNotFoundException {
+        sun newSun = new sun();
+        newSun.stackPane.setLayoutX(px);
+        newSun.stackPane.setLayoutY(py);
+        primaryPane.getChildren().add(newSun.stackPane);
+        return newSun;
+    }
+
     protected double getPosX(){
         return this.stackPane.getLayoutX();
     }
