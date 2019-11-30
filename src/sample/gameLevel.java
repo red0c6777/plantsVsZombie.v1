@@ -10,10 +10,7 @@ import javafx.scene.control.Button;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.TransferMode;
+import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -23,8 +20,8 @@ import javafx.scene.text.Text;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Stack;
 
@@ -36,6 +33,7 @@ import java.util.Stack;
 
 public class gameLevel extends Application {
 
+    private Stage primaryStage;
     private Pane quickPlayPane;
     private Scene mainMenuScene;
     private int level;
@@ -47,7 +45,9 @@ public class gameLevel extends Application {
     private ArrayList<plant> plantList;
     private ArrayList<lawnmower> lawnmowerArrayList;
     private int sunCount;
+    private gameAllMighty gameController;
     private Text sunLabel = new Text();
+    private double numberOfZombiesLeft;
 
     public gameLevel(int l,Scene mms){
         this.level = l;
@@ -59,8 +59,10 @@ public class gameLevel extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage pp) throws Exception {
 
+        System.out.println("Starting the level!");
+        primaryStage = pp;
         plantList = new ArrayList<>();
         zombiesList = new ArrayList<>();
         peaShooterArrayList = new ArrayList<>();
@@ -68,12 +70,55 @@ public class gameLevel extends Application {
         potatoMineArrayList = new ArrayList<>();
         wallNutArrayList = new ArrayList<>();
         lawnmowerArrayList = new ArrayList<>();
-
+        numberOfZombiesLeft = level * 3;
         sunCount = 500;
+        resume(primaryStage,gameController,false);
+    }
 
+    public void resume(Stage ps,gameAllMighty resumedController,boolean isResumed) throws FileNotFoundException {
 
-        System.out.println("Starting the level!");
         //Creating glow effect for button glowing when cursor is hovered on them
+        if(isResumed){
+            this.primaryStage = ps;
+            this.level = resumedController.getLevel();
+
+            this.plantList = new ArrayList<>();
+            for(plant pl: resumedController.getPlantArrayList()){
+                System.out.println(pl.getPlantType());
+                System.out.println(pl.getRow());
+                System.out.println(pl.getColumn());
+                System.out.println(pl.getPosX());
+                System.out.println(pl.getPosY());
+                this.plantList.add(new plant(pl.getPlantType(),pl.getRow(),pl.getColumn(),pl.getPosX(),pl.getPosY()));
+            }
+
+            this.zombiesList = new ArrayList<>();
+            for(zombie z: resumedController.getZombieArrayList()){
+                zombie resumedZombie = new zombie();
+                resumedZombie.setZombiePane(new StackPane());
+                resumedZombie.setHealth(z.getHealth());
+                resumedZombie.setImage(z.getImage());
+                resumedZombie.setImageview(z.getImageview());
+                resumedZombie.setInitialPosX(z.getInitialPosX());
+                resumedZombie.setInitialPosY(z.getInitialPosY());
+                resumedZombie.setPosX(z.getPosX());
+                resumedZombie.setRow(z.getRow());
+                resumedZombie.setSpeed(z.getSpeed());
+                resumedZombie.setType(z.getType());
+                resumedZombie.setZombiePane(z.getZombiePane());
+                this.zombiesList.add(resumedZombie);
+            }
+            peaShooterArrayList = new ArrayList<>();
+            for(peaShooter psr: resumedController.getPeaShooterArrayList()){
+                this.peaShooterArrayList.add(new peaShooter(psr.getRow(),psr.getColumn(),psr.getPosX(),psr.getPosY()));
+            }
+
+            this.sunFlowerArrayList = resumedController.getSunFlowerArrayList();
+            this.potatoMineArrayList = resumedController.getPotatoMineArrayList();
+            this.lawnmowerArrayList = resumedController.getLawnmowerArrayList();
+            this.numberOfZombiesLeft = resumedController.getNumberOfZombiesLeft();
+            this.sunCount = resumedController.getSunCount();
+        }
         DropShadow borderGlow = new DropShadow();
         borderGlow.setOffsetY(0f);
         borderGlow.setOffsetX(0f);
@@ -208,6 +253,17 @@ public class gameLevel extends Application {
         exitButton.setOnAction(actionEvent -> {
             try {
                 System.exit(0);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Could not exit");
+            }
+        });
+
+        saveGameButton.addEventHandler(MouseEvent.MOUSE_ENTERED, (event) -> saveGameButton.setEffect(borderGlow));
+        saveGameButton.addEventHandler(MouseEvent.MOUSE_EXITED, (event) -> saveGameButton.setEffect(null));
+        saveGameButton.setOnAction(actionEvent -> {
+            try {
+                saveGame();
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("Could not exit");
@@ -447,14 +503,18 @@ public class gameLevel extends Application {
         });
 
         //Spawning zombies:
-        for(int i=0;i<level*3;i++) {
-            zombiesList.add(zombie.zombieSpawner(quickPlayPane));
-        }
 
-        int numberOfZombiesLeft = level*3;
+        if(!isResumed)
+            for(int i=0;i<level*3;i++) {
+                zombiesList.add(zombie.zombieSpawner(quickPlayPane));
+            }
+
+        if(isResumed)
+            gameController = resumedController;
+        else
+            gameController = new gameAllMighty(primaryStage,quickPlayPane,mainMenuScene,plantList,zombiesList,lawnmowerArrayList,peaShooterArrayList,sunFlowerArrayList,potatoMineArrayList,numberOfZombiesLeft,level,sunCount);
 
 
-        gameAllMighty gameController = new gameAllMighty(primaryStage,quickPlayPane,mainMenuScene,plantList,zombiesList,lawnmowerArrayList,peaShooterArrayList,sunFlowerArrayList,potatoMineArrayList,numberOfZombiesLeft,level);
         gameController.initialize();
 
         Scene quickPlayScene = new Scene(quickPlayPane);
@@ -463,6 +523,18 @@ public class gameLevel extends Application {
         primaryStage.setScene(quickPlayScene);
         primaryStage.show();
 }
+
+    private void saveGame() throws IOException {
+        ObjectOutputStream out = null;
+        try {
+            out = new ObjectOutputStream(new FileOutputStream("test.txt"));
+            out.writeObject(gameController);
+            System.out.println("Saved Game!");
+
+        } finally {
+            out.close();
+        }
+    }
 
     private void collectSun(double mousePosX, double mousePosY) {
         ArrayList<sun> sunList = gameAllMighty.getSunList();

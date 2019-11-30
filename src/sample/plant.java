@@ -8,19 +8,20 @@ import javafx.stage.Stage;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Stack;
 
-public class plant {
+public class plant implements Serializable {
     private int row;
     private int column;
     private double posX;
     private double posY;
     double health;
     private String plantType;
-    private StackPane plantpane;
-    private Image plantImage;
-    private ImageView plantImageView;
+    transient private StackPane plantpane;
+    transient private Image plantImage;
+    transient private ImageView plantImageView;
 
     public plant (String pt, int r, int c, double px, double py) throws FileNotFoundException{
         this.plantType = pt;
@@ -86,34 +87,50 @@ public class plant {
         this.health = health;
     }
 
+    public String getPlantType() {
+        return plantType;
+    }
+
+    public StackPane getPlantpane() {
+        return plantpane;
+    }
+
+    public Image getPlantImage() {
+        return plantImage;
+    }
+
+    public ImageView getPlantImageView() {
+        return plantImageView;
+    }
+
     void dead(Pane primaryPane){
         plantpane.getChildren().remove(plantImageView);
         primaryPane.getChildren().remove(plantImage);
     }
 }
 
-class peaShooter extends plant{
+class peaShooter extends plant implements Serializable{
 
     public peaShooter(int r, int c, double px, double py) throws FileNotFoundException {
         super("peashooter", r, c, px, py);
     }
 }
 
-class sunFlower extends plant{
+class sunFlower extends plant implements Serializable{
 
     public sunFlower(int r, int c, double px, double py) throws FileNotFoundException {
         super("sunflower", r, c, px, py);
     }
 }
 
-class wallNut extends plant{
+class wallNut extends plant implements Serializable{
 
     public wallNut(int r, int c, double px, double py) throws FileNotFoundException {
         super("wallnut", r, c, px, py);
     }
 }
 
-class potatoMine extends plant{
+class potatoMine extends plant implements Serializable{
 
     public potatoMine(int r, int c, double px, double py) throws FileNotFoundException {
         super("potatomine", r, c, px, py);

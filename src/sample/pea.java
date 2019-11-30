@@ -7,11 +7,12 @@ import javafx.scene.layout.StackPane;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.Serializable;
 
-public class pea {
-    private Image image = new Image(new FileInputStream("res\\images\\pea.png"));
-    private ImageView imageView = new ImageView(image);
-    private StackPane stackPane;
+public class pea implements Serializable {
+    transient private Image image = new Image(new FileInputStream("res\\images\\pea.png"));
+    transient private ImageView imageView = new ImageView(image);
+    transient private StackPane stackPane;
     private double speed = 1;
     private double sourceX;
     private double sourceY;

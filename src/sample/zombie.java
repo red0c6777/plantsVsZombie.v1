@@ -10,23 +10,28 @@ import javafx.util.Duration;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.Serializable;
 import java.util.Random;
 
-public class zombie {
-    Image image = new Image(new FileInputStream("res//images//zombie//zombieFlying.gif"),114,144,false,false);
-    ImageView imageview = new ImageView(image);
-    int posX;
-    int posY;
+public class zombie implements Serializable {
+    transient Image image = new Image(new FileInputStream("res//images//zombie//zombieFlying.gif"),114,144,false,false);
+    transient ImageView imageview = new ImageView(image);
+    double posX;
+    double posY;
+    double resumedPosX;
+    double resumePosY;
     int row;
     int health;
     double speed;
     int type;
-    StackPane zombiePane;
+    transient StackPane zombiePane;
     int initialPosX = 1300;
     int initialPosY;
 
     public zombie() throws FileNotFoundException {
         zombiePane = new StackPane();
+        posX = this.zombiePane.getLayoutX();
+        posY = this.zombiePane.getLayoutY();
         zombiePane.getChildren().add(imageview);
         health = 100;
         speed = 0.1;
@@ -58,10 +63,12 @@ public class zombie {
                 newZombie.row = 5;
                 break;
         }
-        newZombie.initialPosX = (1280 + rand.nextInt(500));
+        newZombie.initialPosX = (1280 + rand.nextInt(10000));
 
         newZombie.zombiePane.setLayoutX(newZombie.initialPosX);
+        newZombie.posX = newZombie.initialPosX;
         newZombie.zombiePane.setLayoutY(newZombie.initialPosY);
+        newZombie.posY = newZombie.initialPosY;
 
         primaryPane.getChildren().add(newZombie.zombiePane);
 
@@ -77,18 +84,95 @@ public class zombie {
 
     void step(){
         this.zombiePane.setLayoutX(this.zombiePane.getLayoutX() - speed);
+        posX = posX - speed;
     }
 
     protected double getPosX(){
-        return this.zombiePane.getLayoutX();
+        return this.posX;
     }
 
     protected double getPosY(){
-        return this.zombiePane.getLayoutY();
+        return this.posY;
     }
 
     protected double getPos(){
         return  this.zombiePane.getLayoutY();
+    }
+
+    public Image getImage() {
+        return image;
+    }
+
+    public void setImage(Image image) {
+        this.image = image;
+    }
+
+    public ImageView getImageview() {
+        return imageview;
+    }
+
+    public void setImageview(ImageView imageview) {
+        this.imageview = imageview;
+    }
+
+    public void setPosX(double posX) {
+        this.posX = posX;
+    }
+
+    public void setPosY(double posY) {
+        this.posY = posY;
+    }
+
+    public void setRow(int row) {
+        this.row = row;
+    }
+
+    public int getHealth() {
+        return health;
+    }
+
+    public void setHealth(int health) {
+        this.health = health;
+    }
+
+    public double getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(double speed) {
+        this.speed = speed;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
+    public StackPane getZombiePane() {
+        return zombiePane;
+    }
+
+    public void setZombiePane(StackPane zombiePane) {
+        this.zombiePane = zombiePane;
+    }
+
+    public int getInitialPosX() {
+        return initialPosX;
+    }
+
+    public void setInitialPosX(int initialPosX) {
+        this.initialPosX = initialPosX;
+    }
+
+    public int getInitialPosY() {
+        return initialPosY;
+    }
+
+    public void setInitialPosY(int initialPosY) {
+        this.initialPosY = initialPosY;
     }
 
     public int getRow() {
@@ -98,4 +182,6 @@ public class zombie {
     protected void damage(double d) {
         this.health -= d;
     }
+
+
 }

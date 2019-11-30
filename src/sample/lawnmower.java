@@ -8,14 +8,15 @@ import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.Serializable;
 
-public class lawnmower {
-    Image image = new Image(new FileInputStream("res\\images\\lawnmower.png"));
-    ImageView imageview = new ImageView(image);
+public class lawnmower implements Serializable {
+    transient Image image = new Image(new FileInputStream("res\\images\\lawnmower.png"));
+    transient ImageView imageview = new ImageView(image);
     int row;
     double posX = 200;
     double posY;
-    StackPane pane;
+    transient StackPane pane;
     boolean alreadyUnleashed;
 
     public lawnmower(int r) throws FileNotFoundException {

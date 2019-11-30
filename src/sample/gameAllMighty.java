@@ -20,11 +20,12 @@ import javafx.stage.Popup;
 import javafx.stage.Stage;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.Serializable;
 import java.util.*;
 import java.util.regex.Pattern;
 
 //TODO: Implement
-public class gameAllMighty implements EventHandler<KeyEvent> {
+public class gameAllMighty implements EventHandler<KeyEvent>, Serializable {
 
     final private double FRAMES_PER_SECOND = 60.0;
 
@@ -36,29 +37,33 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
     ArrayList<potatoMine> potatoMineArrayList;
     ArrayList<lawnmower> lawnmowerArrayList;
     HashMap <zombie,plant> eatingZombieArrayList;
-    Button nextLevelButton;
-    Button mainMenuButton;
+    transient Button nextLevelButton;
+    transient Button mainMenuButton;
+    transient Button retryButton;
     static int[] timeElapsedSinceBuying; //0=sunflower, 1=peashooter, 2=wallnut, 3=potatomine
     static ArrayList<sun> sunArrayList = new ArrayList<>();
-    private Timer timer;
+    transient private Timer timer;
     private double numberOfZombiesLeft;
     private double totalNumberOfZombies;
-    Stage primaryStage;
-    Pane primaryPane;
-    Scene mainMenuScene;
+    transient Stage primaryStage;
+    transient Pane primaryPane;
+    transient Scene mainMenuScene;
     int secondsPassed;
     int level;
-    Text clock;
-    StackPane clockPane;
-    ProgressBar progressBar;
-    StackPane pbPane;
-    Popup gameWonPopUp;
+    transient Text clock;
+    transient StackPane clockPane;
+    transient ProgressBar progressBar;
+    transient StackPane pbPane;
+    transient Popup gameWonPopUp;
+    transient Popup gameLostPopUp;
     static boolean paused;
+    int sunCount;
     boolean gameLost;
     boolean gameWin;
 
-    public gameAllMighty(Stage ps,Pane pp,Scene mms,ArrayList<plant> pl, ArrayList<zombie> zo,ArrayList<lawnmower> lw,ArrayList<peaShooter> psal,ArrayList<sunFlower> sfal,ArrayList<potatoMine> pmal,int nozl,int l){
+    public gameAllMighty(Stage ps,Pane pp,Scene mms,ArrayList<plant> pl, ArrayList<zombie> zo,ArrayList<lawnmower> lw,ArrayList<peaShooter> psal,ArrayList<sunFlower> sfal,ArrayList<potatoMine> pmal,double nozl,int l,int sc){
         primaryStage = ps;
+        sunCount = sc;
         primaryPane = pp;
         mainMenuScene = mms;
         plantArrayList = pl;
@@ -70,6 +75,7 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
         lawnmowerArrayList = lw;
         level = l;
         gameWonPopUp = new Popup();
+        gameLostPopUp = new Popup();
         eatingZombieArrayList = new HashMap<>();
         timeElapsedSinceBuying = new int[4];
         for(int i=0;i<4;i++){
@@ -80,6 +86,9 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
         paused = false;
         gameLost = false;
         gameWin = false;
+        mainMenuButton = new Button();
+        nextLevelButton = new Button();
+        retryButton = new Button();
 
         //initializing progress bar:
         progressBar = new ProgressBar();
@@ -89,10 +98,8 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
         pbPane.setLayoutX(240);
         pbPane.setLayoutY(25);
         primaryPane.getChildren().add(pbPane);
-        mainMenuButton = new Button();
-        nextLevelButton = new Button();
-
     }
+
 
     protected static void removeSun(sun s) {
         sunArrayList.remove(s);
@@ -393,9 +400,20 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
         zombiesToRemove.clear();
 
 
-        if(gameLost){
+        if(gameLost) {
+            gameLost = false;
             System.out.println("Game lost!");
+            VBox gameLostButtons = new VBox();
+            Text lostMessage = new Text("You lost this round!");
+            retryButton = new Button("Retry Level");
+            mainMenuButton = new Button("Main Menu");
+            gameLostButtons.getChildren().addAll(retryButton, mainMenuButton);
+            gameLostPopUp.getContent().addAll(lostMessage,gameLostButtons);
+            paused = true;
+            gameLostPopUp.show(primaryStage);
+            timer.cancel();
         }
+
         if(gameWin){
             gameWin = false;
             System.out.println("You won this round!");
@@ -413,21 +431,11 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
             }
             nextLevelButton = new Button("Next Level");
             mainMenuButton = new Button("Main Menu");
-            gameWonButtons.getChildren().addAll(winnerMessage,nextLevelButton,mainMenuButton);
-            gameWonPopUp.getContent().add(gameWonButtons);
+            gameWonButtons.getChildren().addAll(nextLevelButton,mainMenuButton);
+            gameWonPopUp.getContent().addAll(winnerMessage,gameWonButtons);
             paused = true;
             gameWonPopUp.show(primaryStage);
             timer.cancel();
-           /* gameLevel nextGamelevel = new gameLevel(level+1,mainMenuScene);
-            try {
-                nextGamelevel.start(primaryStage);
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.out.println("Cannot start level game!");
-            }
-
-            */
-            //primaryStage.setScene(mainMenuScene);
         }
         mainMenuButton.setOnAction(actionEvent -> {
             try {
@@ -440,13 +448,24 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
         });
 
         nextLevelButton.setOnAction(actionEvent -> {
-            gameLevel nextGamelevel = new gameLevel(level+1,mainMenuScene);
+            gameLevel nextGameLevel = new gameLevel(level+1,mainMenuScene);
             try {
                 gameWonPopUp.hide();
-                nextGamelevel.start(primaryStage);
+                nextGameLevel.start(primaryStage);
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("Cannot start level game!");
+            }
+        });
+
+        retryButton.setOnAction(actionEvent -> {
+            gameLevel retryGameLevel = new gameLevel(level,mainMenuScene);
+            try {
+                gameLostPopUp.hide();
+                retryGameLevel.start(primaryStage);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Cannot retry level game!");
             }
         });
     }
@@ -480,4 +499,139 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
     public static void setPaused(boolean p) {
         paused = p;
     }
+
+    public int getSecondsPassed() {
+        return secondsPassed;
+    }
+
+    public double getFRAMES_PER_SECOND() {
+        return FRAMES_PER_SECOND;
+    }
+
+    public ArrayList<plant> getPlantArrayList() {
+        return plantArrayList;
+    }
+
+    public ArrayList<zombie> getZombieArrayList() {
+        return zombieArrayList;
+    }
+
+    public ArrayList<pea> getPeaArrayList() {
+        return peaArrayList;
+    }
+
+    public ArrayList<peaShooter> getPeaShooterArrayList() {
+        return peaShooterArrayList;
+    }
+
+    public ArrayList<sunFlower> getSunFlowerArrayList() {
+        return sunFlowerArrayList;
+    }
+
+    public ArrayList<potatoMine> getPotatoMineArrayList() {
+        return potatoMineArrayList;
+    }
+
+    public ArrayList<lawnmower> getLawnmowerArrayList() {
+        return lawnmowerArrayList;
+    }
+
+    public HashMap<zombie, plant> getEatingZombieArrayList() {
+        return eatingZombieArrayList;
+    }
+
+    public Button getNextLevelButton() {
+        return nextLevelButton;
+    }
+
+    public Button getMainMenuButton() {
+        return mainMenuButton;
+    }
+
+    public Button getRetryButton() {
+        return retryButton;
+    }
+
+    public static int[] getTimeElapsedSinceBuying() {
+        return timeElapsedSinceBuying;
+    }
+
+    public static ArrayList<sun> getSunArrayList() {
+        return sunArrayList;
+    }
+
+    public Timer getTimer() {
+        return timer;
+    }
+
+    public double getNumberOfZombiesLeft() {
+        return numberOfZombiesLeft;
+    }
+
+    public double getTotalNumberOfZombies() {
+        return totalNumberOfZombies;
+    }
+
+    public Stage getPrimaryStage() {
+        return primaryStage;
+    }
+
+    public Pane getPrimaryPane() {
+        return primaryPane;
+    }
+
+    public Scene getMainMenuScene() {
+        return mainMenuScene;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public Text getClock() {
+        return clock;
+    }
+
+    public StackPane getClockPane() {
+        return clockPane;
+    }
+
+    public ProgressBar getProgressBar() {
+        return progressBar;
+    }
+
+    public StackPane getPbPane() {
+        return pbPane;
+    }
+
+    public Popup getGameWonPopUp() {
+        return gameWonPopUp;
+    }
+
+    public Popup getGameLostPopUp() {
+        return gameLostPopUp;
+    }
+
+    public static boolean isPaused() {
+        return paused;
+    }
+
+    public boolean isGameLost() {
+        return gameLost;
+    }
+
+    public boolean isGameWin() {
+        return gameWin;
+    }
+
+    public int getSunCount() {
+        return sunCount;
+    }
 }
+
+/*
+class  singleton{
+    private  static singleton sinlgeinsatance = null;
+    private  int
+}
+ */

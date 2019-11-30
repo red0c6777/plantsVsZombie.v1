@@ -21,6 +21,7 @@ import javafx.util.Duration;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Main extends Application {
@@ -211,7 +212,7 @@ public class Main extends Application {
     }
 
     void loadGame(Stage primaryStage) throws Exception{
-        Image underConstructionImage = new Image(new FileInputStream("res\\images\\underConstruction.jpg"),1280,720,false,false);
+        /*Image underConstructionImage = new Image(new FileInputStream("res\\images\\underConstruction.jpg"),1280,720,false,false);
         ImageView underConstructionImageView = new ImageView(underConstructionImage);
 
         Pane loadGamePane = new Pane();
@@ -220,6 +221,18 @@ public class Main extends Application {
 
         primaryStage.setScene(loadGameScene);
         primaryStage.show();
+         */
+        gameAllMighty loadedGame;
+        ObjectInputStream in = null;
+        try{
+            in = new ObjectInputStream(new FileInputStream("test.txt"));
+            loadedGame = (gameAllMighty) in.readObject();
+            System.out.println("Loaded game seconds= " + loadedGame.getSecondsPassed());
+            gameLevel loadedGamelevel = new gameLevel(loadedGame.getLevel(),mainMenuScene);
+            loadedGamelevel.resume(primaryStage,loadedGame,true);
+        }finally {
+            in.close();
+        }
     }
 
     void selectLevel(Stage primaryStage) throws FileNotFoundException {
