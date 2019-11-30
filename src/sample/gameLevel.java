@@ -36,20 +36,22 @@ import java.util.Stack;
 
 public class gameLevel extends Application {
 
-    Pane quickPlayPane;
-    int level;
-    ArrayList<peaShooter> peaShooterArrayList;
-    ArrayList<sunFlower> sunFlowerArrayList;
-    ArrayList<wallNut> wallNutArrayList;
-    ArrayList<potatoMine> potatoMineArrayList;
-    ArrayList<zombie> zombiesList;
-    ArrayList<plant> plantList;
-    ArrayList<lawnmower> lawnmowerArrayList;
-    int sunCount;
-    Text sunLabel = new Text();
+    private Pane quickPlayPane;
+    private Scene mainMenuScene;
+    private int level;
+    private  ArrayList<peaShooter> peaShooterArrayList;
+    private ArrayList<sunFlower> sunFlowerArrayList;
+    private ArrayList<wallNut> wallNutArrayList;
+    private ArrayList<potatoMine> potatoMineArrayList;
+    private ArrayList<zombie> zombiesList;
+    private ArrayList<plant> plantList;
+    private ArrayList<lawnmower> lawnmowerArrayList;
+    private int sunCount;
+    private Text sunLabel = new Text();
 
-    public gameLevel(int l){
+    public gameLevel(int l,Scene mms){
         this.level = l;
+        mainMenuScene = mms;
     }
 
     void setLevel(int l){
@@ -162,7 +164,7 @@ public class gameLevel extends Application {
         //Pause Box for buttons:
 
         VBox pauseMenuBox = new VBox();
-        pauseMenuBox.getChildren().addAll(saveGameButton, exitButton);
+        pauseMenuBox.getChildren().addAll(resumeButton, saveGameButton, exitButton);
         pauseMenuBox.setSpacing(10f);
         pauseMenuBox.setLayoutX(105);
         pauseMenuBox.setLayoutY(250);
@@ -179,6 +181,8 @@ public class gameLevel extends Application {
         pauseButton.addEventHandler(MouseEvent.MOUSE_EXITED, (event) -> pauseButton.setEffect(null));
         pauseButton.setOnAction(actionEvent -> {
             try {
+                System.out.println("pausing game!");
+                gameAllMighty.setPaused(true);
                 if (!menuPopUp.isShowing())
                     menuPopUp.show(primaryStage);
             } catch (Exception e) {
@@ -191,6 +195,7 @@ public class gameLevel extends Application {
         resumeButton.addEventHandler(MouseEvent.MOUSE_EXITED, (event) -> resumeButton.setEffect(null));
         resumeButton.setOnAction(actionEvent -> {
             try {
+                gameAllMighty.setPaused(false);
                 menuPopUp.hide();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -238,7 +243,12 @@ public class gameLevel extends Application {
 
         //Plant slots VBox:
         VBox plantSlots = new VBox();
-        plantSlots.getChildren().addAll(sunflowerCardImageView, peashooterCardImageView, wallnutCardImageView,potatoMineCardImageView);
+        plantSlots.getChildren().addAll(sunflowerCardImageView, peashooterCardImageView);
+        if(level>1) {
+            plantSlots.getChildren().add(wallnutCardImageView);
+            if(level>2)
+                plantSlots.getChildren().add(potatoMineCardImageView);
+        }
         plantSlots.setLayoutX(20);
         plantSlots.setLayoutY(150);
         plantSlots.setSpacing(2f);
@@ -330,7 +340,7 @@ public class gameLevel extends Application {
 
                 System.out.println("Planting coord: row: "+row+"  column: "+column);
 
-                int rechargeTime = 1000;
+                int rechargeTime = 0;
 
                 try {
                     switch (plantType){
@@ -444,7 +454,7 @@ public class gameLevel extends Application {
         int numberOfZombiesLeft = level*3;
 
 
-        gameAllMighty gameController = new gameAllMighty(quickPlayPane,plantList,zombiesList,lawnmowerArrayList,peaShooterArrayList,sunFlowerArrayList,numberOfZombiesLeft);
+        gameAllMighty gameController = new gameAllMighty(primaryStage,quickPlayPane,mainMenuScene,plantList,zombiesList,lawnmowerArrayList,peaShooterArrayList,sunFlowerArrayList,potatoMineArrayList,numberOfZombiesLeft,level);
         gameController.initialize();
 
         Scene quickPlayScene = new Scene(quickPlayPane);

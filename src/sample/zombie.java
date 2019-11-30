@@ -58,7 +58,7 @@ public class zombie {
                 newZombie.row = 5;
                 break;
         }
-        newZombie.initialPosX = (1280 + rand.nextInt(10000));
+        newZombie.initialPosX = (1280 + rand.nextInt(500));
 
         newZombie.zombiePane.setLayoutX(newZombie.initialPosX);
         newZombie.zombiePane.setLayoutY(newZombie.initialPosY);

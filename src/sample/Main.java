@@ -25,12 +25,15 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class Main extends Application {
 
+    private Pane mainMenuPane;
+    private Scene mainMenuScene;
+
     @Override
     public void start(Stage primaryStage) throws Exception{
 
         primaryStage.setResizable(false);
         //Making Pane and VBox
-        Pane mainMenuPane = new Pane();
+        mainMenuPane = new Pane();
         VBox menuBox = new VBox();
 
         //Creating glow effect for button glowing when cursor is hovered on them
@@ -105,7 +108,7 @@ public class Main extends Application {
         startGameButton.setOnAction(actionEvent -> {
             try {
                 //startGame(primaryStage);
-                gameLevel gamelevel = new gameLevel(3);
+                gameLevel gamelevel = new gameLevel(3,mainMenuScene);
                 gamelevel.start(primaryStage);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -148,7 +151,7 @@ public class Main extends Application {
         leaderboardButton.setLayoutY(200);
 
 
-        Scene mainMenuScene = new Scene(mainMenuPane);
+        mainMenuScene = new Scene(mainMenuPane);
         primaryStage.setScene(mainMenuScene);
         primaryStage.show();
     }
@@ -172,7 +175,7 @@ public class Main extends Application {
 
         submitButton.setOnAction(actionEvent -> {
             try {
-                gameLevel gamelevel = new gameLevel(1);
+                gameLevel gamelevel = new gameLevel(1,mainMenuScene);
                 gamelevel.start(primaryStage);
             }catch(Exception e){
                 e.printStackTrace();
@@ -261,11 +264,11 @@ public class Main extends Application {
         levelButtons.setLayoutY(350);
         levelButtons.setLayoutX(320);
 
-        l1.setOnMouseClicked(new selectLevelController(primaryStage ,1));
-        l2.setOnMouseClicked(new selectLevelController(primaryStage,2));
-        l3.setOnMouseClicked(new selectLevelController(primaryStage,3));
-        l4.setOnMouseClicked(new selectLevelController(primaryStage,4));
-        l5.setOnMouseClicked(new selectLevelController(primaryStage,5));
+        l1.setOnMouseClicked(new selectLevelController(primaryStage ,1,mainMenuScene));
+        l2.setOnMouseClicked(new selectLevelController(primaryStage,2,mainMenuScene));
+        l3.setOnMouseClicked(new selectLevelController(primaryStage,3,mainMenuScene));
+        l4.setOnMouseClicked(new selectLevelController(primaryStage,4,mainMenuScene));
+        l5.setOnMouseClicked(new selectLevelController(primaryStage,5,mainMenuScene));
 
         selectLevelPane.getChildren().addAll(new ImageView(bg),selectLevelFlagImageView,levelButtons);
         Scene selectLevelScene = new Scene(selectLevelPane);

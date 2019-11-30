@@ -2,27 +2,28 @@ package sample;
 
 import javafx.application.Platform;
 import javafx.event.EventHandler;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-
+import javafx.stage.Popup;
+import javafx.stage.Stage;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.regex.Pattern;
 
-//TODO : Add zombie biting
-//TODO: making the throwing not simultaneous for all plants
-//TODO: pause the game
-
-
+//TODO: Implement
 public class gameAllMighty implements EventHandler<KeyEvent> {
 
     final private double FRAMES_PER_SECOND = 60.0;
@@ -32,30 +33,43 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
     ArrayList<pea> peaArrayList;
     ArrayList<peaShooter> peaShooterArrayList;
     ArrayList<sunFlower> sunFlowerArrayList;
+    ArrayList<potatoMine> potatoMineArrayList;
     ArrayList<lawnmower> lawnmowerArrayList;
     HashMap <zombie,plant> eatingZombieArrayList;
+    Button nextLevelButton;
+    Button mainMenuButton;
     static int[] timeElapsedSinceBuying; //0=sunflower, 1=peashooter, 2=wallnut, 3=potatomine
     static ArrayList<sun> sunArrayList = new ArrayList<>();
     private Timer timer;
     private double numberOfZombiesLeft;
     private double totalNumberOfZombies;
+    Stage primaryStage;
     Pane primaryPane;
+    Scene mainMenuScene;
     int secondsPassed;
+    int level;
     Text clock;
     StackPane clockPane;
     ProgressBar progressBar;
     StackPane pbPane;
+    Popup gameWonPopUp;
+    static boolean paused;
     boolean gameLost;
     boolean gameWin;
 
-    public gameAllMighty(Pane pp,ArrayList<plant> pl, ArrayList<zombie> zo,ArrayList<lawnmower> lw,ArrayList<peaShooter> psal,ArrayList<sunFlower> sfal,int nozl){
+    public gameAllMighty(Stage ps,Pane pp,Scene mms,ArrayList<plant> pl, ArrayList<zombie> zo,ArrayList<lawnmower> lw,ArrayList<peaShooter> psal,ArrayList<sunFlower> sfal,ArrayList<potatoMine> pmal,int nozl,int l){
+        primaryStage = ps;
         primaryPane = pp;
+        mainMenuScene = mms;
         plantArrayList = pl;
         zombieArrayList = zo;
         peaArrayList = new ArrayList<>();
         peaShooterArrayList = psal;
         sunFlowerArrayList = sfal;
+        potatoMineArrayList = pmal;
         lawnmowerArrayList = lw;
+        level = l;
+        gameWonPopUp = new Popup();
         eatingZombieArrayList = new HashMap<>();
         timeElapsedSinceBuying = new int[4];
         for(int i=0;i<4;i++){
@@ -63,6 +77,7 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
         }
         numberOfZombiesLeft = nozl;
         totalNumberOfZombies = nozl;
+        paused = false;
         gameLost = false;
         gameWin = false;
 
@@ -74,6 +89,8 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
         pbPane.setLayoutX(240);
         pbPane.setLayoutY(25);
         primaryPane.getChildren().add(pbPane);
+        mainMenuButton = new Button();
+        nextLevelButton = new Button();
 
     }
 
@@ -98,16 +115,18 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
-                        Iterator it = eatingZombieArrayList.entrySet().iterator();
-                        while (it.hasNext()) {
-                            Map.Entry pair = (Map.Entry)it.next();
-                            plant pl = (plant) pair.getValue();
-                            pl.setHealth(pl.getHealth() - 20);
-                            System.out.println("plant heath: "+pl.getHealth());
-                            if(pl.getHealth() <=0){  //if dead plant, do the following
-                                pl.dead(primaryPane);
-                                plantArrayList.remove(pl);
-                                eatingZombieArrayList.remove(pair.getKey());
+                        if(!paused) {
+                            Iterator it = eatingZombieArrayList.entrySet().iterator();
+                            while (it.hasNext()) {
+                                Map.Entry pair = (Map.Entry) it.next();
+                                plant pl = (plant) pair.getValue();
+                                pl.setHealth(pl.getHealth() - 20);
+                                System.out.println("plant heath: " + pl.getHealth());
+                                if (pl.getHealth() <= 0) {  //if dead plant, do the following
+                                    pl.dead(primaryPane);
+                                    plantArrayList.remove(pl);
+                                    eatingZombieArrayList.remove(pair.getKey());
+                                }
                             }
                         }
                     }
@@ -127,7 +146,8 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
                     @Override
                     public void run() {
                         try {
-                            peaSpawner();
+                            if(!paused)
+                                peaSpawner();
                         } catch (FileNotFoundException e) {
                             e.printStackTrace();
                         }
@@ -199,15 +219,16 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
-                        for (sunFlower sf: sunFlowerArrayList){
-                            double px = sf.getPosX() + rand.nextInt(20);
-                            double py = sf.getPosY() +rand.nextInt(20);
-                            try {
-                                sunArrayList.add(sun.sunFlowerSunSpawner(primaryPane,px,py));
-                            } catch (FileNotFoundException e) {
-                                e.printStackTrace();
+                        if(!paused)
+                            for (sunFlower sf: sunFlowerArrayList){
+                                double px = sf.getPosX() + rand.nextInt(20);
+                                double py = sf.getPosY() +rand.nextInt(20);
+                                try {
+                                    sunArrayList.add(sun.sunFlowerSunSpawner(primaryPane,px,py));
+                                } catch (FileNotFoundException e) {
+                                    e.printStackTrace();
+                                }
                             }
-                        }
                     }
                 });
             }
@@ -225,7 +246,8 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
                     @Override
                     public void run() {
                         try {
-                            sunArrayList.add(sun.sunSpawner(primaryPane));
+                            if(!paused)
+                                sunArrayList.add(sun.sunSpawner(primaryPane));
                         } catch (FileNotFoundException e) {
                             e.printStackTrace();
                         }
@@ -239,27 +261,22 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
 
     private void updateGame() throws FileNotFoundException {
         //checkingFight();
-        updateAnimation();
-        checkingFight();
+        if(!paused) {
+            updateAnimation();
+            checkingFight();
 
-        for(int i=0;i<4;i++){ //timing the time elapsed since the plant was last bought
-            timeElapsedSinceBuying[i]+=1;
+            for (int i = 0; i < 4; i++) { //timing the time elapsed since the plant was last bought
+                timeElapsedSinceBuying[i] += 1;
+            }
         }
-
-
     }
 
     private void updateAnimation() throws FileNotFoundException {
         peaStepper();
-        progressBarUpdate();
         for(zombie z : zombieArrayList){
             if(!eatingZombieArrayList.containsKey(z))
                 z.step();
         }
-    }
-
-    private void progressBarUpdate() {
-
     }
 
     private void peaSpawner() throws FileNotFoundException {
@@ -299,11 +316,8 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
                         //adding the pea to remove list
                         peasToRemove.add(p);
                         z.damage(p.getDamage());
-                        if(z.health <= 0) {
-                            numberOfZombiesLeft-=1;
-                            progressBar.setProgress(1.0 - numberOfZombiesLeft/totalNumberOfZombies);
+                        if(z.health <= 0)
                             zombiesToRemove.add(z);
-                        }
                     }
                 }
 
@@ -315,6 +329,27 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
                         }
                     }
                 }
+
+                //checking if the zombie is near the potatomine
+
+                ArrayList<potatoMine>  potatoMineToRemove = new ArrayList<>();
+                for(potatoMine pm: potatoMineArrayList){
+                    if(z.getRow() == pm.getRow() && z.getPosX() - pm.getPosX() <= 60){
+                        for(zombie ztbb:zombieArrayList){
+                            if(pm.getPosX()-150 <= ztbb.getPosX() && ztbb.getPosX() <= pm.getPosX()+150 && pm.getPosY()-150 <= ztbb.getPosY() && ztbb.getPosY() <= pm.getPosY()+150){
+                                zombiesToRemove.add(ztbb);
+                            }
+                        }
+                        pm.dead(primaryPane);
+                        potatoMineToRemove.add(pm);
+                        plantArrayList.remove(pm);
+                    }
+                }
+
+                //removing potatomine which were used:
+                for(potatoMine pmtr: potatoMineToRemove)
+                    potatoMineArrayList.remove(pmtr);
+
                 //removing the peas which were used:
                 for (pea ptr: peasToRemove){
                     ptr.removePea(primaryPane);
@@ -326,12 +361,18 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
             if(z.getPosX() <= 280){
                 int zombieRow = z.getRow();
                 for (lawnmower lw : lawnmowerArrayList){
-                    if (lw.getRow() == zombieRow && !(lw.alreadyUnleashed)){
+                    if (lw.getRow() == zombieRow){
                         if(lw.alreadyUnleashed)
                             gameLost = true;
                         else {
                             lw.alreadyUnleashed = true;
                             lw.unleashLawnmower(primaryPane);
+                            //killing the zombies in the row of the lawnmower
+                            for(zombie ztk: zombieArrayList){
+                                if(ztk.getRow() == lw.getRow() && ztk.getPosX()<= 1280){
+                                    zombiesToRemove.add(ztk);
+                                }
+                            }
                         }
                     }
                 }
@@ -339,6 +380,11 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
         }
         //removing zombies:
         for (zombie ztr: zombiesToRemove){
+            numberOfZombiesLeft-=1;
+            if(numberOfZombiesLeft <= 0){
+                gameWin = true;
+            }
+            progressBar.setProgress(1.0 - numberOfZombiesLeft/totalNumberOfZombies);
             ztr.dead(primaryPane);
             zombieArrayList.remove(ztr);
             if(eatingZombieArrayList.containsKey(ztr))
@@ -351,14 +397,67 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
             System.out.println("Game lost!");
         }
         if(gameWin){
+            gameWin = false;
             System.out.println("You won this round!");
+            VBox gameWonButtons = new VBox();
+            Text winnerMessage = new Text();
+            switch(level){
+                case 1:
+                    winnerMessage.setText("Congratulations! You have unlocked WallNut!");
+                    break;
+                case 2:
+                    winnerMessage.setText("Congratulations! You have unlocked Potato Mine!");
+                    break;
+                default:
+                    winnerMessage.setText("Congratulations! You have won this round!");
+            }
+            nextLevelButton = new Button("Next Level");
+            mainMenuButton = new Button("Main Menu");
+            gameWonButtons.getChildren().addAll(winnerMessage,nextLevelButton,mainMenuButton);
+            gameWonPopUp.getContent().add(gameWonButtons);
+            paused = true;
+            gameWonPopUp.show(primaryStage);
+            timer.cancel();
+           /* gameLevel nextGamelevel = new gameLevel(level+1,mainMenuScene);
+            try {
+                nextGamelevel.start(primaryStage);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Cannot start level game!");
+            }
+
+            */
+            //primaryStage.setScene(mainMenuScene);
         }
+        mainMenuButton.setOnAction(actionEvent -> {
+            try {
+                gameWonPopUp.hide();
+                primaryStage.setScene(mainMenuScene);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Could not go to main menu!");
+            }
+        });
+
+        nextLevelButton.setOnAction(actionEvent -> {
+            gameLevel nextGamelevel = new gameLevel(level+1,mainMenuScene);
+            try {
+                gameWonPopUp.hide();
+                nextGamelevel.start(primaryStage);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Cannot start level game!");
+            }
+        });
     }
 
     void updateClock(){
-        secondsPassed+=1;
-        //System.out.println("Seconds passed: "+secondsPassed);
-        clock.setText("Time: "+Integer.toString(secondsPassed));
+
+        if(!paused) {
+            secondsPassed += 1;
+            //System.out.println("Seconds passed: "+secondsPassed);
+            clock.setText("Time: " + Integer.toString(secondsPassed));
+        }
     }
 
     protected static ArrayList<sun> getSunList(){
@@ -376,5 +475,9 @@ public class gameAllMighty implements EventHandler<KeyEvent> {
     @Override
     public void handle(KeyEvent keyEvent) {
 
+    }
+
+    public static void setPaused(boolean p) {
+        paused = p;
     }
 }
