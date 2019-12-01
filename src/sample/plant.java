@@ -31,6 +31,7 @@ public class plant implements Serializable {
             case "peashooter":
                 plantImage = new Image(new FileInputStream("res\\images\\plant\\peashooter.png"));
                 health = 100;
+                System.out.println("resumed peashsajkhdskf");
                 break;
             case "sunflower":
                 plantImage = new Image(new FileInputStream("res\\images\\plant\\sunflower.png"));
@@ -51,7 +52,6 @@ public class plant implements Serializable {
         plantpane = new StackPane(plantImageView);
         plantpane.setLayoutX(posX+10);
         plantpane.setLayoutY(posY+30);
-
     }
 
     void addPlantToLawn(Pane quickPlayPane){

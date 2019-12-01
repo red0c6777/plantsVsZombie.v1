@@ -63,7 +63,7 @@ public class zombie implements Serializable {
                 newZombie.row = 5;
                 break;
         }
-        newZombie.initialPosX = (1280 + rand.nextInt(10000));
+        newZombie.initialPosX = (1280 + rand.nextInt(5000));
 
         newZombie.zombiePane.setLayoutX(newZombie.initialPosX);
         newZombie.posX = newZombie.initialPosX;
@@ -85,6 +85,7 @@ public class zombie implements Serializable {
     void step(){
         this.zombiePane.setLayoutX(this.zombiePane.getLayoutX() - speed);
         posX = posX - speed;
+
     }
 
     protected double getPosX(){
@@ -182,6 +183,15 @@ public class zombie implements Serializable {
     protected void damage(double d) {
         this.health -= d;
     }
+
+    protected void setLayoutX(double px){
+        this.zombiePane.setLayoutX(px);
+    }
+
+    protected void setLayoutY(double py){
+        this.zombiePane.setLayoutY(py);
+    }
+
 
 
 }

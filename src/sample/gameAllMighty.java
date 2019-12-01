@@ -2,6 +2,7 @@ package sample;
 
 import javafx.application.Platform;
 import javafx.event.EventHandler;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
@@ -23,6 +24,12 @@ import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.*;
 import java.util.regex.Pattern;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import javafx.util.Duration;
+
+import java.io.File;
+
 
 //TODO: Implement
 public class gameAllMighty implements EventHandler<KeyEvent>, Serializable {
@@ -61,8 +68,17 @@ public class gameAllMighty implements EventHandler<KeyEvent>, Serializable {
     boolean gameLost;
     boolean gameWin;
 
+    transient MediaPlayer bombSound;
+    transient MediaPlayer nuclearSound;
+    transient MediaPlayer peaShooterSound;
+
+
+    //Bonus stuff:
+    transient Button powerButton;
+
     public gameAllMighty(Stage ps,Pane pp,Scene mms,ArrayList<plant> pl, ArrayList<zombie> zo,ArrayList<lawnmower> lw,ArrayList<peaShooter> psal,ArrayList<sunFlower> sfal,ArrayList<potatoMine> pmal,double nozl,int l,int sc){
         primaryStage = ps;
+        secondsPassed = 0;
         sunCount = sc;
         primaryPane = pp;
         mainMenuScene = mms;
@@ -98,6 +114,22 @@ public class gameAllMighty implements EventHandler<KeyEvent>, Serializable {
         pbPane.setLayoutX(240);
         pbPane.setLayoutY(25);
         primaryPane.getChildren().add(pbPane);
+
+        powerButton =  new Button("Deploy Nuclear Bomb!");
+        primaryPane.getChildren().add(powerButton);
+        powerButton.setLayoutX(400);
+        powerButton.setLayoutY(25);
+
+        //sound effects:
+
+        Media bs = new Media(new File("C:\\Users\\Death_Agent\\Desktop\\pvz project\\GameAssignment\\res\\sound\\blast.mp3").toURI().toString());
+        bombSound = new MediaPlayer(bs);
+
+        Media ns = new Media(new File("C:\\Users\\Death_Agent\\Desktop\\pvz project\\GameAssignment\\res\\sound\\nuclear.mp3").toURI().toString());
+        nuclearSound = new MediaPlayer(ns);
+
+        Media peaso = new Media(new File("C:\\Users\\Death_Agent\\Desktop\\pvz project\\GameAssignment\\res\\sound\\peaShooter.mp3").toURI().toString());
+        peaShooterSound = new MediaPlayer(peaso);
     }
 
 
@@ -105,7 +137,7 @@ public class gameAllMighty implements EventHandler<KeyEvent>, Serializable {
         sunArrayList.remove(s);
     }
 
-    public void initialize() throws FileNotFoundException {
+    public final void initialize() throws FileNotFoundException {
         this.startTimer();
         this.startSunSpawner();
         this.startSunFlowerSunSpawner();
@@ -167,7 +199,7 @@ public class gameAllMighty implements EventHandler<KeyEvent>, Serializable {
     }
 
     private void startClock() throws FileNotFoundException {
-        secondsPassed = 0;
+        //secondsPassed = 0;
         clock = new Text();
         clockPane = new StackPane();
         clock.setText("Time: "+Integer.toString(secondsPassed));
@@ -289,6 +321,8 @@ public class gameAllMighty implements EventHandler<KeyEvent>, Serializable {
     private void peaSpawner() throws FileNotFoundException {
         for(plant ps: peaShooterArrayList) {
             pea newPea = new pea(ps.getPosX()+80, ps.getPosY()+30);
+            peaShooterSound.play();
+            peaShooterSound.seek(Duration.millis(0));
             peaArrayList.add(newPea);
             newPea.addPeaToLawn(primaryPane);
         }
@@ -342,6 +376,8 @@ public class gameAllMighty implements EventHandler<KeyEvent>, Serializable {
                 ArrayList<potatoMine>  potatoMineToRemove = new ArrayList<>();
                 for(potatoMine pm: potatoMineArrayList){
                     if(z.getRow() == pm.getRow() && z.getPosX() - pm.getPosX() <= 60){
+                        bombSound.play();
+                        bombSound.seek(Duration.millis(0));
                         for(zombie ztbb:zombieArrayList){
                             if(pm.getPosX()-150 <= ztbb.getPosX() && ztbb.getPosX() <= pm.getPosX()+150 && pm.getPosY()-150 <= ztbb.getPosY() && ztbb.getPosY() <= pm.getPosY()+150){
                                 zombiesToRemove.add(ztbb);
@@ -400,15 +436,33 @@ public class gameAllMighty implements EventHandler<KeyEvent>, Serializable {
         zombiesToRemove.clear();
 
 
+        if(sunCount>=300)
+            powerButton.setVisible(true);
+        else
+            powerButton.setVisible(false);
+
+
+        powerButton.setOnAction(actionEvent -> {
+            try {
+                sunCount-=300;
+                nuclearAttack();
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Could not nuclear attack");
+            }
+        });
+
         if(gameLost) {
             gameLost = false;
             System.out.println("Game lost!");
-            VBox gameLostButtons = new VBox();
+            HBox gameLostButtons = new HBox();
             Text lostMessage = new Text("You lost this round!");
+            lostMessage.setFont(Font.font(35));
             retryButton = new Button("Retry Level");
             mainMenuButton = new Button("Main Menu");
             gameLostButtons.getChildren().addAll(retryButton, mainMenuButton);
             gameLostPopUp.getContent().addAll(lostMessage,gameLostButtons);
+            gameLostButtons.setSpacing(50);
             paused = true;
             gameLostPopUp.show(primaryStage);
             timer.cancel();
@@ -417,7 +471,7 @@ public class gameAllMighty implements EventHandler<KeyEvent>, Serializable {
         if(gameWin){
             gameWin = false;
             System.out.println("You won this round!");
-            VBox gameWonButtons = new VBox();
+            HBox gameWonButtons = new HBox();
             Text winnerMessage = new Text();
             switch(level){
                 case 1:
@@ -429,10 +483,13 @@ public class gameAllMighty implements EventHandler<KeyEvent>, Serializable {
                 default:
                     winnerMessage.setText("Congratulations! You have won this round!");
             }
+
+            winnerMessage.setFont(Font.font(35));
             nextLevelButton = new Button("Next Level");
             mainMenuButton = new Button("Main Menu");
             gameWonButtons.getChildren().addAll(nextLevelButton,mainMenuButton);
             gameWonPopUp.getContent().addAll(winnerMessage,gameWonButtons);
+            gameWonButtons.setSpacing(50);
             paused = true;
             gameWonPopUp.show(primaryStage);
             timer.cancel();
@@ -468,6 +525,21 @@ public class gameAllMighty implements EventHandler<KeyEvent>, Serializable {
                 System.out.println("Cannot retry level game!");
             }
         });
+    }
+
+    private void nuclearAttack() {
+        System.out.println("BOOOOOOOOOOOOOOOOOOOOM!");
+        nuclearSound.play();
+        nuclearSound.seek(Duration.millis(0));
+        ArrayList<zombie> zombiesToDestroy = new ArrayList<>();
+        for(zombie ztd: zombieArrayList){
+            if (ztd.getPosX() < 1280)
+                zombiesToDestroy.add(ztd);
+        }
+        for(zombie ztr: zombiesToDestroy) {
+            ztr.dead(primaryPane);
+            zombieArrayList.remove(ztr);
+        }
     }
 
     void updateClock(){
