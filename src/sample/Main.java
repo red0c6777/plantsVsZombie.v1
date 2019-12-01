@@ -252,8 +252,7 @@ public class Main extends Application {
                 gameAllMighty loadedGame;
                 ObjectInputStream in = null;
                 try{
-
-                    in = new ObjectInputStream(new FileInputStream(playerName));
+                    in = new ObjectInputStream(new FileInputStream(playerName+".txt"));
                     loadedGame = (gameAllMighty) in.readObject();
                     //System.out.println("Loaded game seconds= " + loadedGame.getSecondsPassed());
                     gameLevel loadedGamelevel = new gameLevel(loadedGame.getLevel(),mainMenuScene);
