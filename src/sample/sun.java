@@ -11,12 +11,13 @@ import javafx.util.Duration;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.RandomAccessFile;
+import java.io.Serializable;
 import java.util.Random;
 
-public class sun {
-    Image image = new Image(new FileInputStream("res\\images\\sun.png"));
-    ImageView imageView = new ImageView(image);
-    StackPane stackPane = new StackPane();
+public class sun implements Serializable {
+    transient Image image = new Image(new FileInputStream("res\\images\\sun.png"));
+    transient ImageView imageView = new ImageView(image);
+    transient StackPane stackPane = new StackPane();
     double posX;
     double targetY;
 

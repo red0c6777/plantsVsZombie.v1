@@ -21,6 +21,7 @@ import javafx.util.Duration;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Main extends Application {
@@ -109,6 +110,7 @@ public class Main extends Application {
             try {
                 //startGame(primaryStage);
                 gameLevel gamelevel = new gameLevel(3,mainMenuScene);
+                gamelevel.setPlayerName("Guest");
                 gamelevel.start(primaryStage);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -176,6 +178,9 @@ public class Main extends Application {
         submitButton.setOnAction(actionEvent -> {
             try {
                 gameLevel gamelevel = new gameLevel(1,mainMenuScene);
+                String playerName = nameTF.getText();
+                System.out.println(playerName);
+                gamelevel.setPlayerName(playerName);
                 gamelevel.start(primaryStage);
             }catch(Exception e){
                 e.printStackTrace();
@@ -211,7 +216,7 @@ public class Main extends Application {
     }
 
     void loadGame(Stage primaryStage) throws Exception{
-        Image underConstructionImage = new Image(new FileInputStream("res\\images\\underConstruction.jpg"),1280,720,false,false);
+        /*Image underConstructionImage = new Image(new FileInputStream("res\\images\\underConstruction.jpg"),1280,720,false,false);
         ImageView underConstructionImageView = new ImageView(underConstructionImage);
 
         Pane loadGamePane = new Pane();
@@ -220,6 +225,73 @@ public class Main extends Application {
 
         primaryStage.setScene(loadGameScene);
         primaryStage.show();
+         */
+
+        Image bgi = new Image(new FileInputStream("res\\images\\selectLevelBackground.jpg"),1280,720,false,false);
+        ImageView bgiv = new ImageView(bgi);
+
+        Image submitButtonImage = new Image(new FileInputStream("res\\images\\button\\submitButton.png"),120,50,false,false);
+        Image cancelButtonImage = new Image(new FileInputStream("res\\images\\button\\cancelButton.png"),120,50,false,false);
+
+        TextField nameTF = new TextField();
+        nameTF.setText("Enter name to load the game");
+
+        Button submitButton = new Button();
+        Button cancelButton = new Button();
+        submitButton.setGraphic(new ImageView(submitButtonImage));
+        cancelButton.setGraphic(new ImageView(cancelButtonImage));
+
+
+        submitButton.setOnAction(actionEvent -> {
+            try {
+                gameLevel gamelevel = new gameLevel(1,mainMenuScene);
+                String playerName = nameTF.getText();
+                System.out.println(playerName);
+                gamelevel.setPlayerName(playerName);
+                gamelevel.start(primaryStage);
+                gameAllMighty loadedGame;
+                ObjectInputStream in = null;
+                try{
+                    in = new ObjectInputStream(new FileInputStream(playerName+".txt"));
+                    loadedGame = (gameAllMighty) in.readObject();
+                    //System.out.println("Loaded game seconds= " + loadedGame.getSecondsPassed());
+                    gameLevel loadedGamelevel = new gameLevel(loadedGame.getLevel(),mainMenuScene);
+                    loadedGamelevel.resume(primaryStage,loadedGame,true);
+                }finally {
+                    in.close();
+                }
+            }catch(Exception e){
+                e.printStackTrace();
+                System.out.println("Couldn't load the level!");
+            }
+        });
+
+        cancelButton.setOnAction(actionEvent -> {
+            try {
+                start(primaryStage);
+            }catch (Exception e){
+                e.printStackTrace();
+                System.out.println("Can not start the game!");
+            }
+        });
+
+        HBox buttonBox = new HBox();
+        buttonBox.getChildren().addAll(submitButton,cancelButton);
+
+
+        VBox menuBox = new VBox();
+        menuBox.getChildren().addAll(nameTF,buttonBox);
+
+        menuBox.setLayoutX(500);
+        menuBox.setLayoutY(350);
+
+        Pane newGamePane = new Pane();
+        newGamePane.getChildren().addAll(bgiv,menuBox);
+        Scene newGameScene = new Scene(newGamePane);
+
+        primaryStage.setScene(newGameScene);
+        primaryStage.show();
+
     }
 
     void selectLevel(Stage primaryStage) throws FileNotFoundException {
